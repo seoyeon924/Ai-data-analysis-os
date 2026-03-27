@@ -14,8 +14,8 @@
   --t1:#0F172A;--t2:#334155;--t3:#64748B;--t4:#94A3B8;
   --grid:#E2E8F0;
   --c1:#4A7AB5;--c2:#5B6AB0;--c3:#7B8FCC;--c4:#A8B8E0;--c5:#D4DCF0;
-  --green:#10B981;--red:#EF4444;--amber:#F59E0B;--purple:#7C3AED;
-  --green-bg:#ECFDF5;--red-bg:#FEF2F2;--amber-bg:#FFFBEB;--purple-bg:#F5F3FF;
+  --green:#10B981;--red:#EF4444;--amber:#2E3B55;--purple:#4A7AB5;
+  --green-bg:#ECFDF5;--red-bg:#FEF2F2;--amber-bg:#EEF2F8;--purple-bg:#EEF2F8;
   --font:'Pretendard',-apple-system,sans-serif;--r:10px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;height:1460px;overflow:hidden;font-size:12px}
@@ -38,7 +38,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .topbar{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
 .topbar-left{display:flex;align-items:center;gap:10px}
 .topbar h1{font-size:14px;font-weight:700;color:var(--t1)}
-.exp-badge{background:var(--purple-bg);color:var(--purple);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid rgba(124,58,237,.2)}
+.exp-badge{background:rgba(42,125,181,.1);color:var(--c1);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;border:1px solid rgba(124,58,237,.2)}
 .topbar .meta{font-size:10.5px;color:var(--t3)}
 .topbar-actions{display:flex;align-items:center;gap:8px}
 .btn-sm{padding:5px 12px;border-radius:6px;font-size:10.5px;font-weight:600;cursor:pointer;border:none;font-family:var(--font)}
@@ -65,9 +65,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .badge{display:inline-flex;align-items:center;padding:1.5px 6px;border-radius:4px;font-size:8px;font-weight:700;gap:2px}
 .bg{background:var(--green-bg);color:var(--green)}
 .br{background:var(--red-bg);color:var(--red)}
-.bw{background:var(--amber-bg);color:var(--amber)}
-.bp{background:var(--purple-bg);color:var(--purple)}
-.bc{background:#EFF6FF;color:var(--c1)}
+.bw{background:#EEF2F8;color:var(--t2)}
+.bp{background:#EEF2F8;color:var(--c1)}
+.bc{background:rgba(42,125,181,.08);color:var(--c1)}
 .kpi.risk{border-top:2px solid var(--red)}
 .kpi.win{border-top:2px solid var(--green)}
 
@@ -82,9 +82,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .warn-list{display:flex;flex-direction:column;gap:6px;flex:1}
 .warn-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;border:1px solid}
 .warn-item.ok{background:var(--green-bg);border-color:rgba(16,185,129,.2)}
-.warn-item.warn{background:var(--amber-bg);border-color:rgba(245,158,11,.2)}
+.warn-item.warn{background:#F0F2F7;border-color:var(--border)}
 .warn-item.error{background:var(--red-bg);border-color:rgba(239,68,68,.2)}
-.warn-item.info{background:#EFF6FF;border-color:rgba(74,122,181,.2)}
+.warn-item.info{background:#EEF2F8;border-color:rgba(42,125,181,.15)}
 .warn-icon{font-size:13px;flex-shrink:0}
 .warn-body{flex:1}
 .warn-title{font-size:10.5px;font-weight:700;color:var(--t1)}
@@ -123,10 +123,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .dt tbody tr:last-child td{border-bottom:none}
 .decision-badge{font-size:8px;font-weight:700;padding:2px 7px;border-radius:10px;white-space:nowrap}
 .d-ship{background:#ECFDF5;color:#059669}
-.d-hold{background:#FFFBEB;color:#D97706}
-.d-retest{background:#EFF6FF;color:#2563EB}
+.d-hold{background:#EEF2F8;color:var(--c1)}
+.d-retest{background:#EEF2F8;color:var(--c2)}
 .d-stop{background:#FEF2F2;color:#DC2626}
-.d-monitor{background:#F5F3FF;color:#7C3AED}
+.d-monitor{background:#F0F2F7;color:var(--t2)}
 .ci-bar{display:inline-flex;align-items:center;gap:3px}
 .ci-line{height:2px;background:var(--c4);flex:1}
 .ci-dot{width:6px;height:6px;border-radius:50%;background:var(--c1);flex-shrink:0}
@@ -252,7 +252,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
         </div>
         <div class="warn-list">
           <div class="warn-item error">
-            <span class="warn-icon">⚠️</span>
+            <span class="warn-icon">[!]</span>
             <div class="warn-body">
               <div class="warn-title">SRM 감지 — 팝업 타이밍 실험</div>
               <div class="warn-desc">Control 52.3% / Variant 47.7% · χ²=8.4, p=0.004</div>
@@ -260,31 +260,31 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
             <span class="warn-badge" style="background:var(--red-bg);color:var(--red)">즉시 중단</span>
           </div>
           <div class="warn-item warn">
-            <span class="warn-icon">📉</span>
+            <span class="warn-icon">[-]</span>
             <div class="warn-body">
               <div class="warn-title">Guardrail 악화 — 체크아웃 흐름</div>
               <div class="warn-desc">AOV -₩4,200 (-2.1%) · 95% CI [-4.0%, -0.2%] 유의</div>
             </div>
-            <span class="warn-badge" style="background:var(--amber-bg);color:var(--amber)">모니터링</span>
+            <span class="warn-badge" style="background:#EEF2F8;color:#2E3B55">모니터링</span>
           </div>
           <div class="warn-item warn">
-            <span class="warn-icon">🔬</span>
+            <span class="warn-icon">[S]</span>
             <div class="warn-body">
               <div class="warn-title">표본 부족 — 추천 위젯</div>
               <div class="warn-desc">현재 4,200 / 필요 8,000 · 파워 52% (목표 80%)</div>
             </div>
-            <span class="warn-badge" style="background:var(--amber-bg);color:var(--amber)">7일 추가</span>
+            <span class="warn-badge" style="background:#EEF2F8;color:#2E3B55">7일 추가</span>
           </div>
           <div class="warn-item info">
-            <span class="warn-icon">📊</span>
+            <span class="warn-icon">[Q]</span>
             <div class="warn-body">
               <div class="warn-title">다중 비교 보정 적용</div>
               <div class="warn-desc">Benjamini-Hochberg · 보정 후 유의 실험 6/12 유지</div>
             </div>
-            <span class="warn-badge" style="background:#EFF6FF;color:var(--c1)">정상</span>
+            <span class="warn-badge" style="background:#EEF2F8;color:#2E3B55">정상</span>
           </div>
           <div class="warn-item ok">
-            <span class="warn-icon">✅</span>
+            <span class="warn-icon">[OK]</span>
             <div class="warn-body">
               <div class="warn-title">노벨티 효과 없음 확인</div>
               <div class="warn-desc">가입 폼 실험 · 14일차 이후 효과 안정 유지 확인</div>
@@ -449,7 +449,7 @@ new Chart(document.getElementById("cumulChart").getContext("2d"),{
   type:"line",
   data:{labels:days,datasets:[
     {label:"가입 폼 간소화",data:diff1,borderColor:"#4A7AB5",backgroundColor:"transparent",borderWidth:2,pointRadius:0,tension:.3},
-    {label:"CTA 문구 변경",data:diff2,borderColor:"#7C3AED",backgroundColor:"transparent",borderWidth:1.8,pointRadius:0,tension:.3,borderDash:[4,3]},
+    {label:"CTA 문구 변경",data:diff2,borderColor:"#4A7AB5",backgroundColor:"transparent",borderWidth:1.8,pointRadius:0,tension:.3,borderDash:[4,3]},
   ]},
   plugins:[ciPlugin,zeroLine],
   options:{
@@ -483,7 +483,7 @@ const forestData=[
   {name:"챗봇 위치",effect:5.6,ci:[-4.2,15.4],n:6200,sig:false,decision:"stop"},
   {name:"리뷰 노출 위치",effect:3.7,ci:[-6.1,13.5],n:2100,sig:false,decision:"stop"},
 ];
-const decisionColors={ship:"#059669",hold:"#D97706",retest:"#2563EB",monitor:"#7C3AED",stop:"#DC2626"};
+const decisionColors={ship:"#10B981",hold:"#4A7AB5",retest:"#4A5F80",monitor:"#6B7280",stop:"#EF4444"};
 const fp=document.getElementById("forestPlot");
 const W=fp.clientWidth||580,H=fp.clientHeight||200;
 const marginL=150,marginR=80,plotW=W-marginL-marginR;
@@ -519,24 +519,35 @@ fp.innerHTML=`<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" preserveAs
 
 // ── 세그먼트 스캐터: X=uplift, Y=confidence%, size=sample ──
 const segData=[
-  {x:30.8,y:99,r:18,label:"모바일·2030",status:"safe"},
-  {x:31.0,y:97,r:20,label:"신규방문·전체",status:"safe"},
-  {x:28.1,y:98,r:22,label:"PC·3040",status:"safe"},
-  {x:16.5,y:96,r:62,label:"이메일·전체",status:"safe"},
-  {x:12.2,y:89,r:28,label:"PC·4050",status:"needs"},
-  {x:22.9,y:91,r:12,label:"모바일·1020",status:"needs"},
-  {x:16.1,y:83,r:9,label:"태블릿·전체",status:"low"},
-  {x:5.6,y:61,r:8,label:"재방문자",status:"low"},
-  {x:3.7,y:52,r:5,label:"해외 방문",status:"explore"},
+  {x:30.8,y:96,r:10,label:"모바일·2030",status:"safe"},
+  {x:33.0,y:94,r:11,label:"신규방문·전체",status:"safe"},
+  {x:28.1,y:95,r:12,label:"PC·3040",status:"safe"},
+  {x:16.5,y:93,r:18,label:"이메일·전체",status:"safe"},
+  {x:12.2,y:86,r:13,label:"PC·4050",status:"needs"},
+  {x:22.9,y:88,r:8,label:"모바일·1020",status:"needs"},
+  {x:16.1,y:80,r:7,label:"태블릿·전체",status:"low"},
+  {x:5.6,y:58,r:6,label:"재방문자",status:"low"},
+  {x:3.7,y:49,r:5,label:"해외 방문",status:"explore"},
 ];
-const statusColors={safe:"#10B981",needs:"#F59E0B",low:"#A8B8E0",explore:"#EF4444"};
+const statusColors={safe:"#10B981",needs:"#4A7AB5",low:"#A8B8E0",explore:"#EF4444"};
 const segLabelPlugin={id:"sL",afterDraw(chart){
-  const{ctx,scales:{x,y}}=chart;
+  const{ctx,scales:{x,y},chartArea}=chart;
   chart.data.datasets.forEach(ds=>{
     ds.data.forEach(pt=>{
       if(!pt.label)return;
-      ctx.save();ctx.font="bold 8.5px 'Pretendard'";ctx.fillStyle="#0F172A";
-      ctx.textAlign="center";ctx.fillText(pt.label,x.getPixelForValue(pt.x),y.getPixelForValue(pt.y)-pt.r-4);
+      const px=x.getPixelForValue(pt.x);
+      const py=y.getPixelForValue(pt.y);
+      const offset=pt.r+12;
+      // 상단에 충분한 공간이 있으면 위, 없으면 아래
+      const labelY=py-offset < chartArea.top+4 ? py+offset+8 : py-offset;
+      ctx.save();
+      ctx.font="bold 8.5px 'Pretendard'";
+      ctx.fillStyle="#0F172A";
+      ctx.textAlign="center";
+      // 텍스트가 우측 경계 밖으로 나가면 왼쪽 정렬
+      const textW=ctx.measureText(pt.label).width;
+      const finalX=px+textW/2>chartArea.right ? chartArea.right-textW/2-2 : px;
+      ctx.fillText(pt.label,finalX,labelY);
       ctx.restore();
     });
   });
@@ -547,16 +558,20 @@ new Chart(document.getElementById("segChart").getContext("2d"),{
     data:segData.map(d=>({x:d.x,y:d.y,r:d.r,label:d.label})),
     backgroundColor:segData.map(d=>statusColors[d.status]+"BB"),
     borderColor:segData.map(d=>statusColors[d.status]),
-    borderWidth:1.5
+    borderWidth:1.5,
+    clip:false
   }]},
   plugins:[segLabelPlugin],
-  options:{responsive:true,maintainAspectRatio:false,
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    clip:false,
+    layout:{padding:{top:28,bottom:8,left:10,right:55}},
     plugins:{legend:{display:false},tooltip:{backgroundColor:"#0F172A",callbacks:{
       label:c=>`Uplift: +${c.parsed.x}% | 신뢰도: ${c.parsed.y}% | n≈${c.raw.r*500}`
     }}},
     scales:{
-      x:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>"+"+v+"%"},title:{display:true,text:"Relative Uplift",font:{size:9},color:"#94A3B8"},min:-5,max:45},
-      y:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>v+"%"},title:{display:true,text:"통계적 신뢰도 (%)",font:{size:9},color:"#94A3B8"},min:40,max:102}
+      x:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>"+"+v+"%"},title:{display:true,text:"Relative Uplift",font:{size:9},color:"#94A3B8"},min:-8,max:42},
+      y:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>v+"%"},title:{display:true,text:"통계적 신뢰도 (%)",font:{size:9},color:"#94A3B8"},min:38,max:105}
     }
   }
 });
@@ -567,14 +582,14 @@ const aiItems=[
     idx:"01",name:"가입 폼 간소화",decision:"Ship",decClass:"d-ship",
     metric:{primary:"CVR +30.8%",ci:"95% CI [22.1%, 39.5%]",pval:"p < 0.001",n:"N=7,600"},
     constraint:"모바일 전체 유효 · PC에서 +8.2%로 약함",
-    risk:"AOV 변화 없음 · Guardrail 통과 ✅",
+    risk:"AOV 변화 없음 · Guardrail 통과 [OK]",
     action:"모바일 전체 100% 즉시 배포 · PC는 별도 실험"
   },
   {
     idx:"02",name:"소셜증거 배치 변경",decision:"Ship",decClass:"d-ship",
     metric:{primary:"CVR +31.0%",ci:"95% CI [20.8%, 41.2%]",pval:"p < 0.001",n:"N=11,000"},
     constraint:"신규 방문자에서만 강함 · 재방문자 효과 +3.1% (미유의)",
-    risk:"환불률 +0.4% · 유의하지 않음 ✅",
+    risk:"환불률 +0.4% · 유의하지 않음 [OK]",
     action:"히어로 섹션 위 배치 확정 · 재방문자는 별도 세그먼트 처리"
   },
   {
@@ -644,7 +659,7 @@ t.innerHTML="<thead><tr>"+
       <td style="font-weight:700;color:${parseFloat(r.pval)<0.05?"#059669":"#64748B"}">${r.pval}</td>
       <td style="color:#64748B">${r.n}</td>
       <td style="color:#64748B">${r.runtime}</td>
-      <td style="color:${gOk?"#059669":"#D97706"};font-weight:600">${r.guardrail}</td>
+      <td style="color:${gOk?"#10B981":"#EF4444"};font-weight:600">${r.guardrail}</td>
       <td><span class="decision-badge d-${r.decision}">${tDecLabel[r.decision]}</span></td>
     </tr>`;
   }).join("")+"</tbody>";
