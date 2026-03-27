@@ -3,439 +3,645 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1300">
-<title>PM 전략 KPI 맵 | PM OS</title>
+<title>Data PM OS | Metric Intelligence</title>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#F2F4F7;--card:#FFFFFF;--border:#E5E7EB;
-  --sidebar:#1B2D3D;--sidebar-active:rgba(255,255,255,.12);
-  --t1:#0F1117;--t2:#374151;--t3:#6B7280;--grid:#E5E7EB;
-  /* PM KPI: 네이비 계열 */
-  --c1:#2E3B55;--c2:#4A5F80;--c3:#6B82A8;--c4:#9BB0CC;--c5:#C8D5E8;
-  --positive:#10B981;--negative:#EF4444;--warning:#F59E0B;
-  --font:'Pretendard',-apple-system,sans-serif;--r:8px;
+  --bg:#F0F2F7;--card:#FFFFFF;--border:#E2E8F0;
+  --sidebar:#2E3B55;
+  --t1:#0F172A;--t2:#334155;--t3:#64748B;--t4:#94A3B8;
+  --c1:#2A7DB5;--c2:#2E3B55;--c3:#4A7AB5;--c4:#85B8D8;--c5:#C5DCF0;
+  --green:#10B981;--red:#EF4444;
+  --green-bg:#ECFDF5;--red-bg:#FEF2F2;
+  --font:'Pretendard',-apple-system,sans-serif;--r:10px;
 }
 body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;height:1460px;overflow:hidden;font-size:12px}
-.sidebar{width:180px;height:1460px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
-.sb-logo{padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
-.sb-logo .brand{font-size:13px;font-weight:700;color:#fff}
-.sb-logo .sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
-.sb-nav{flex:1;padding:8px 0}
-.sb-nav a{display:block;padding:9px 14px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11.5px;border-left:3px solid transparent;transition:all .15s}
-.sb-nav a:hover{background:rgba(255,255,255,.06)}
-.sb-nav a.active{border-left-color:var(--c3);background:var(--sidebar-active);color:#fff;font-weight:600}
-.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.4)}
-.main{flex:1;width:1120px;display:flex;flex-direction:column;height:1460px}
-.topbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+
+/* SIDEBAR */
+.sidebar{width:176px;height:1460px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-ic{width:30px;height:30px;background:var(--c1);border-radius:7px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.sb-logo .brand{font-size:12px;font-weight:800;color:#fff}
+.sb-logo .sub{font-size:9.5px;color:rgba(255,255,255,.45);margin-top:1px}
+.sb-grp{font-size:8px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.8px;padding:10px 14px 4px}
+.sb-nav{flex:1;padding:6px 0}
+.sb-nav a{display:flex;align-items:center;gap:7px;padding:8px 14px;color:rgba(255,255,255,.55);text-decoration:none;font-size:11px;border-left:2px solid transparent;transition:all .15s}
+.sb-nav a:hover{background:rgba(255,255,255,.05)}
+.sb-nav a.active{border-left-color:var(--c1);background:rgba(42,125,181,.15);color:#fff;font-weight:600}
+.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);font-size:9px;color:rgba(255,255,255,.3);line-height:1.8}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;height:1460px;overflow:hidden}
+.topbar{height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+.tb-left{display:flex;align-items:center;gap:8px}
 .topbar h1{font-size:14px;font-weight:700}
-.topbar .meta{font-size:11px;color:var(--t3)}
-.content{flex:1;padding:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;position:relative;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.sec-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-shrink:0}
-.sec-num{width:18px;height:18px;border-radius:3px;background:var(--t1);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.sec-text .sec-title{font-size:11px;font-weight:700;color:var(--t1);line-height:1.2}
-.sec-text .sec-sub{font-size:9.5px;color:var(--t3);margin-top:1px;line-height:1.3}
-.row1{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:96px;flex-shrink:0}
-.kpi-card{flex-direction:column;justify-content:center;height:96px}
-.kpi-val{font-size:18px;font-weight:700;color:var(--t1);margin:2px 0}
-.delta{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
-.delta.up{background:#ECFDF5;color:#10B981}
-.delta.down{background:#FEF2F2;color:#EF4444}
-.delta.warn{background:#FFFBEB;color:#F59E0B}
-.row2{display:grid;grid-template-columns:3fr 1.1fr;gap:8px;height:270px;flex-shrink:0}
-.row2 .card{height:270px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;height:270px;flex-shrink:0}
-.row3 .card{height:270px}
-.row4{display:grid;grid-template-columns:1fr 1.8fr;gap:8px;height:370px;flex-shrink:0}
-.row4 .card{height:370px}
-.chart-wrap{position:relative;flex:1;min-height:0;overflow:hidden}
+.tb-badge{background:rgba(42,125,181,.08);color:var(--c1);font-size:9px;font-weight:700;padding:2px 9px;border-radius:20px;border:1px solid rgba(42,125,181,.2)}
+/* 날짜 필터 */
+.date-filter-wrap{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.date-chips{display:flex;gap:3px}
+.date-chip{padding:4px 9px;border-radius:5px;font-size:9.5px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t3);font-family:var(--font);transition:all .12s}
+.date-chip.active{background:var(--c2);color:#fff;border-color:var(--c2);font-weight:600}
+.date-lbl{font-size:9px;color:var(--t4);white-space:nowrap}
+.date-range{font-size:9px;color:var(--t3);white-space:nowrap;background:var(--bg);padding:3px 8px;border-radius:5px;border:1px solid var(--border)}
+.btn-sm{padding:5px 12px;border-radius:6px;font-size:10.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t2);font-family:var(--font)}
+.btn-pri{background:var(--c1);color:#fff;border-color:var(--c1)}
+
+.content{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+
+/* KPI ROW */
+.row1{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;flex-shrink:0}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;box-shadow:0 1px 4px rgba(15,23,42,.04)}
+.kpi-lbl{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+.kpi-lbl-base{font-size:7.5px;color:var(--t4);font-weight:400;text-transform:none;letter-spacing:0}
+.kpi-val{font-size:20px;font-weight:800;color:var(--t1);line-height:1;letter-spacing:-.5px}
+.kpi-sub{display:flex;align-items:center;gap:4px;margin-top:4px}
+.kpi-def{font-size:8px;color:var(--t4);margin-top:3px;line-height:1.4}
+.badge{display:inline-flex;align-items:center;padding:1.5px 6px;border-radius:4px;font-size:8px;font-weight:700}
+.bg{background:var(--green-bg);color:var(--green)}
+.br{background:var(--red-bg);color:var(--red)}
+.bn{background:#EEF2F8;color:var(--c2)}
+.kpi-spark{display:block;width:100%;height:28px;margin-top:5px}
+
+/* ROWS */
+.row2{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;height:300px;flex-shrink:0}
+.row3{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;height:280px;flex-shrink:0}
+.row4{display:grid;grid-template-columns:1fr 1.6fr;gap:10px;flex:1;min-height:0}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.05)}
+.card-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;flex-shrink:0}
+.card-num{width:20px;height:20px;border-radius:5px;background:var(--sidebar);color:#fff;font-size:8.5px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.card-title{font-size:11.5px;font-weight:700;color:var(--t1)}
+.card-sub{font-size:9px;color:var(--t3);margin-top:1px}
+.chart-wrap{position:relative;flex:1;min-height:0;overflow:visible}
 .chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
-/* OKR 트리 */
-.okr-tree{display:flex;flex-direction:column;gap:6px;flex:1;overflow:auto;}
-.okr-obj{border:1px solid var(--border);border-radius:6px;overflow:hidden;}
-.okr-obj-hd{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--c1);cursor:pointer;}
-.okr-obj-hd .obj-title{font-size:10.5px;font-weight:700;color:#fff;flex:1;}
-.okr-obj-hd .obj-pct{font-size:11px;font-weight:800;color:#fff;}
-.okr-obj-hd .obj-bar{width:60px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
-.okr-obj-hd .obj-bar-fill{height:100%;background:#fff;border-radius:2px;}
-.okr-krs{padding:0 10px;}
-.okr-kr-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bg);}
-.okr-kr-row:last-child{border-bottom:none;}
-.kr-name{font-size:10px;color:var(--t2);flex:1;}
-.kr-track{width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;flex-shrink:0;}
-.kr-fill{height:100%;border-radius:3px;}
-.kr-pct{font-size:10px;font-weight:700;width:32px;text-align:right;flex-shrink:0;}
-/* 히트맵 */
-.heatmap-wrap{flex:1;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
-.hm-row{display:flex;align-items:center;gap:3px;}
-.hm-lbl{font-size:9px;color:var(--t3);width:60px;text-align:right;flex-shrink:0;}
-.hm-cells{display:flex;gap:3px;flex:1;}
-.hm-cell{flex:1;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;}
-.hm-col-labels{display:flex;gap:3px;padding-left:63px;margin-bottom:2px;}
-.hm-col-lbl{flex:1;font-size:8.5px;color:var(--t3);text-align:center;}
-/* 리스크 매트릭스 */
-.risk-wrap{flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center;}
-.risk-row{display:flex;align-items:center;gap:8px;}
-.risk-name{font-size:10px;color:var(--t2);width:110px;flex-shrink:0;}
-.risk-impact{font-size:9px;font-weight:700;width:32px;text-align:center;flex-shrink:0;}
-.risk-bar-wrap{flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden;}
-.risk-bar{height:100%;border-radius:3px;}
-.risk-prob{font-size:9px;color:var(--t3);width:36px;text-align:right;flex-shrink:0;}
+
+/* METRIC HIERARCHY TREE */
+.tree-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:5px}
+.tree-node{display:flex;align-items:stretch;gap:0}
+.tree-indent{width:16px;flex-shrink:0;position:relative}
+.tree-indent::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--border)}
+.tree-indent::after{content:'';position:absolute;left:8px;top:50%;width:8px;height:1px;background:var(--border)}
+.tree-card{flex:1;border:1px solid var(--border);border-radius:6px;padding:5px 8px;display:flex;align-items:center;gap:7px}
+.tree-card.north-star{background:var(--c2);border-color:var(--c2)}
+.tree-card.primary{background:#EEF2F8;border-color:rgba(42,125,181,.2)}
+.tree-card.input{background:var(--card);border-color:var(--border)}
+.tree-card.guardrail{background:#FEF2F2;border-color:rgba(239,68,68,.15)}
+.tree-tag{font-size:7px;font-weight:700;padding:1.5px 5px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.tree-name{font-size:10px;font-weight:600;flex:1}
+.tree-val{font-size:10px;font-weight:700;white-space:nowrap}
+.tree-delta{font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px}
+
+/* PULSE RATIO */
+.pulse-wrap{flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.pulse-main{text-align:center;padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+.pulse-num{font-size:36px;font-weight:800;letter-spacing:-1px}
+.pulse-lbl{font-size:9px;color:var(--t3);margin-top:3px}
+.pulse-breakdown{display:flex;flex-direction:column;gap:5px}
+.pb-row{display:flex;align-items:center;gap:8px}
+.pb-lbl{font-size:10px;color:var(--t2);width:70px;flex-shrink:0}
+.pb-track{flex:1;height:8px;background:var(--bg);border-radius:4px;overflow:hidden}
+.pb-fill{height:100%;border-radius:4px}
+.pb-val{font-size:10px;font-weight:700;width:40px;text-align:right;flex-shrink:0}
+.pulse-formula{font-size:8.5px;color:var(--t3);text-align:center;padding:5px;background:var(--bg);border-radius:5px;line-height:1.5}
+
+/* 리텐션 베이스라인 */
+.retention-legend{display:flex;gap:12px;margin-top:5px;flex-shrink:0}
+.ret-leg{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--t3)}
+.ret-dot{width:10px;height:2px;border-radius:1px}
+
+/* 좌절 경험률 바 */
+.frust-list{display:flex;flex-direction:column;gap:8px;flex:1}
+.frust-row{display:flex;align-items:center;gap:7px}
+.frust-week{font-size:9.5px;color:var(--t2);width:36px;flex-shrink:0;font-weight:600}
+.frust-track{flex:1;height:12px;background:var(--bg);border-radius:4px;overflow:hidden;position:relative}
+.frust-fill{height:100%;border-radius:4px}
+.frust-val{font-size:9px;font-weight:700;width:34px;text-align:right;flex-shrink:0}
+.frust-churn{font-size:9px;color:var(--t3);width:40px;text-align:right;flex-shrink:0}
+
+/* RFM 세그먼트 */
+.rfm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1}
+.rfm-cell{border-radius:7px;padding:8px 10px;border:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
+.rfm-seg{font-size:9px;font-weight:700;color:var(--t1)}
+.rfm-pct{font-size:16px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.rfm-desc{font-size:8px;color:var(--t3);line-height:1.4}
+.rfm-action{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:10px;margin-top:2px;align-self:flex-start}
+
+/* 이탈 원인 분석 */
+.cause-list{display:flex;flex-direction:column;gap:6px;flex:1}
+.cause-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;border:1px solid var(--border);background:var(--bg)}
+.cause-rank{font-size:9px;font-weight:700;color:var(--t3);width:14px;flex-shrink:0}
+.cause-name{font-size:10px;color:var(--t1);font-weight:600;flex:1}
+.cause-bars{display:flex;flex-direction:column;gap:2px;width:80px;flex-shrink:0}
+.cause-bar-row{display:flex;align-items:center;gap:3px}
+.cause-bar-lbl{font-size:7px;color:var(--t4);width:14px}
+.cause-bar-track{flex:1;height:5px;background:var(--border);border-radius:2px;overflow:hidden}
+.cause-bar-fill{height:100%;border-radius:2px}
+.cause-action{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+
 /* AI 액션 */
-.ai-list{display:flex;flex-direction:column;gap:6px;flex:1;}
-.ai-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--bg);border-radius:5px;border:1px solid var(--border);}
-.ai-num{width:18px;height:18px;border-radius:4px;background:var(--c1);display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff;flex-shrink:0;}
-.ai-txt{font-size:10px;color:var(--t2);line-height:1.5;flex:1;}
-.ai-txt b{color:var(--t1);}
-.ai-tag{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;align-self:flex-start;flex-shrink:0;margin-top:1px;}
-/* 테이블 */
-.perf-table{width:100%;border-collapse:collapse;font-size:11px;}
-.perf-table thead tr{border-bottom:1.5px solid var(--border)}
-.perf-table th{text-align:right;font-size:9.5px;text-transform:uppercase;color:var(--t3);padding:5px 8px;font-weight:700;white-space:nowrap}
-.perf-table th:first-child{text-align:left}
-.perf-table tbody tr{border-bottom:1px solid #f2f4f7}
-.perf-table tbody tr:hover{background:#f7f9fb}
-.perf-table td{padding:7px 8px;text-align:right;color:var(--t2);font-size:11px;}
-.perf-table td:first-child{text-align:left;color:var(--t1);font-weight:600}
-.perf-table tr:last-child td{border-bottom:none}
-.badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+.ai-list{display:flex;flex-direction:column;gap:6px;flex:1;overflow:auto}
+.ai-item{border:1px solid var(--border);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.ai-hd{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.ai-idx{width:18px;height:18px;border-radius:5px;background:var(--sidebar);color:#fff;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-title{font-size:10px;font-weight:700;color:var(--t1);flex:1}
+.ai-pri{font-size:7.5px;font-weight:700;padding:2px 7px;border-radius:10px}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px}
+.ai-cell{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:4px 7px}
+.ai-cell-lbl{font-size:7.5px;color:var(--t4);text-transform:uppercase;letter-spacing:.3px;margin-bottom:1px}
+.ai-cell-val{font-size:10px;font-weight:600;color:var(--t1)}
+.ai-action{font-size:9px;color:var(--t2);border-top:1px solid var(--border);padding-top:5px;line-height:1.5}
+.ai-action b{color:var(--t1)}
+
+/* Input Metric 상태 테이블 */
+.metric-table{width:100%;border-collapse:collapse;font-size:10.5px}
+.metric-table thead tr{border-bottom:2px solid var(--border)}
+.metric-table th{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.4px;padding:0 8px 7px;text-align:right;font-weight:700;white-space:nowrap}
+.metric-table th:first-child,.metric-table th:nth-child(2){text-align:left}
+.metric-table tbody tr{border-bottom:1px solid #F1F5F9}
+.metric-table tbody tr:hover{background:#F8FAFC}
+.metric-table td{padding:8px 8px;text-align:right;color:var(--t2);white-space:nowrap;vertical-align:middle}
+.metric-table td:first-child,.metric-table td:nth-child(2){text-align:left;color:var(--t1)}
+.metric-table td:first-child{font-weight:700}
+.metric-table tr:last-child td{border-bottom:none}
+.layer-badge{font-size:7.5px;font-weight:700;padding:1.5px 6px;border-radius:10px}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px}
 </style>
 </head>
 <body>
+
 <aside class="sidebar">
   <div class="sb-logo">
-    <div class="brand">PM OS</div>
-    <div class="sub">Strategy KPI Map</div>
+    <div class="sb-ic">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+    </div>
+    <div class="brand">Data PM OS</div>
+    <div class="sub">Metric Intelligence</div>
   </div>
   <nav class="sb-nav">
-    <a href="#" class="active">OKR 현황</a>
-    <a href="#">스프린트</a>
-    <a href="#">NPS 추이</a>
-    <a href="#">리스크</a>
-    <a href="#">로드맵</a>
+    <div class="sb-grp">Overview</div>
+    <a href="#" class="active">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>지표 현황
+    </a>
+    <a href="#">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-7"/></svg>리텐션 분석
+    </a>
+    <div class="sb-grp">Deep Dive</div>
+    <a href="#">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Pulse Ratio
+    </a>
+    <a href="#">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>RFM 세그먼트
+    </a>
+    <a href="#">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>이탈 원인
+    </a>
   </nav>
-  <div class="sb-footer">Q1 2024 · Sprint 6</div>
+  <div class="sb-footer">
+    힙데비 개념 기반<br>
+    Metric Hierarchy<br>
+    구독형 SaaS 기준
+  </div>
 </aside>
 
 <div class="main">
   <div class="topbar">
-    <h1>PM 전략 KPI 맵 대시보드</h1>
-    <span class="meta">2024.01 – 03 · Sprint 6 진행중</span>
+    <div class="tb-left">
+      <h1>Data PM · Metric Intelligence</h1>
+      <span class="tb-badge">구독 리텐션 중심 · Input Metric 관제</span>
+    </div>
+    <div class="date-filter-wrap">
+      <span class="date-lbl">기준</span>
+      <div class="date-chips">
+        <button class="date-chip" onclick="setDate('7d',this)">7일</button>
+        <button class="date-chip active" onclick="setDate('30d',this)">30일</button>
+        <button class="date-chip" onclick="setDate('q',this)">분기</button>
+        <button class="date-chip" onclick="setDate('6m',this)">6개월</button>
+      </div>
+      <span class="date-range" id="dateRange">2024.06.01 – 06.30</span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn-sm">리포트 내보내기</button>
+      <button class="btn-sm btn-pri">가설 등록</button>
+    </div>
   </div>
+
   <div class="content">
-    <div class="row1" id="kpiRow"></div>
 
+    <!-- ROW 1: KPI (Input Metric 건강도) -->
+    <div class="row1">
+      <div class="kpi">
+        <div class="kpi-lbl">Pulse Ratio <span class="kpi-lbl-base">· 주간</span></div>
+        <div class="kpi-val" style="color:#EF4444">0.82</div>
+        <div class="kpi-sub"><span class="badge br">이탈 > 유입</span></div>
+        <canvas class="kpi-spark" id="spark0"></canvas>
+        <div class="kpi-def">(신규+복귀) / 이탈 · < 1 위험</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">재결제율 <span class="kpi-lbl-base">· 월간</span></div>
+        <div class="kpi-val">71.4%</div>
+        <div class="kpi-sub"><span class="badge br">▼ -3.2%p</span></div>
+        <canvas class="kpi-spark" id="spark1"></canvas>
+        <div class="kpi-def">1 - 구독 해지율 · 최우선 개선</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">체험 전환율 <span class="kpi-lbl-base">· 최근 30일</span></div>
+        <div class="kpi-val">38.2%</div>
+        <div class="kpi-sub"><span class="badge bg">▲ +1.4%p</span></div>
+        <canvas class="kpi-spark" id="spark2"></canvas>
+        <div class="kpi-def">무료체험 전환 / 핵심기능 미리보기</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">구독 전환율 <span class="kpi-lbl-base">· 최근 30일</span></div>
+        <div class="kpi-val">24.6%</div>
+        <div class="kpi-sub"><span class="badge br">▼ -0.8%p</span></div>
+        <canvas class="kpi-spark" id="spark3"></canvas>
+        <div class="kpi-def">결제 전환 / 무료체험 완료자</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">좌절 경험률 <span class="kpi-lbl-base">· 주간</span></div>
+        <div class="kpi-val">41.3%</div>
+        <div class="kpi-sub"><span class="badge br">▲ +4.1%p 악화</span></div>
+        <canvas class="kpi-spark" id="spark4"></canvas>
+        <div class="kpi-def">핵심기능 없는 문제 / 전체 검색</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">액티브 리텐션 <span class="kpi-lbl-base">· 주간</span></div>
+        <div class="kpi-val">58.9%</div>
+        <div class="kpi-sub"><span class="badge br">▼ -2.3%p</span></div>
+        <canvas class="kpi-spark" id="spark5"></canvas>
+        <div class="kpi-def">핵심기능 사용 / W-1 구독자</div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Metric Hierarchy + Pulse Ratio + 리텐션 곡선 -->
     <div class="row2">
-      <!-- NPS 추이 라인 -->
+
+      <!-- Metric Hierarchy Tree -->
       <div class="card">
-        <div class="sec-hd" style="align-items:center">
-          <div class="sec-num">1</div>
-          <div class="sec-text" style="flex:1">
-            <div class="sec-title">NPS · 스프린트 KPI 추이</div>
-            <div class="sec-sub">분기별 NPS 점수 · 스프린트 완료율 · 피처 출시 빈도 복합 추이</div>
+        <div class="card-hd">
+          <div class="card-num">1</div>
+          <div>
+            <div class="card-title">Metric Hierarchy</div>
+            <div class="card-sub">North Star → Primary → Input → Guardrail · 클릭해서 드릴다운</div>
           </div>
-          <div id="trendFilters" style="display:flex;gap:4px;"></div>
         </div>
-        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        <div class="tree-wrap" id="metricTree"></div>
       </div>
-      <!-- 도넛: 피처 완료 -->
+
+      <!-- Pulse Ratio 상세 -->
       <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c2)">2</div>
-          <div class="sec-text">
-            <div class="sec-title">피처 완료율</div>
-            <div class="sec-sub">Q1 목표 대비 실적</div>
+        <div class="card-hd">
+          <div class="card-num">2</div>
+          <div>
+            <div class="card-title">Pulse Ratio 분해</div>
+            <div class="card-sub">(신규+복귀) / 이탈 · 1 미만 = 구독자 순감</div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+        <div class="pulse-wrap">
+          <div class="pulse-main">
+            <div class="pulse-num" style="color:#EF4444">0.82</div>
+            <div class="pulse-lbl">이번 주 Pulse Ratio · 목표 > 1.0</div>
+          </div>
+          <div class="pulse-breakdown">
+            <div class="pb-row">
+              <div class="pb-lbl">신규 구독자</div>
+              <div class="pb-track"><div class="pb-fill" style="width:62%;background:var(--c1)"></div></div>
+              <div class="pb-val" style="color:var(--c1)">+310명</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-lbl">복귀 구독자</div>
+              <div class="pb-track"><div class="pb-fill" style="width:18%;background:var(--c4)"></div></div>
+              <div class="pb-val" style="color:var(--c3)">+89명</div>
+            </div>
+            <div class="pb-row">
+              <div class="pb-lbl" style="color:#EF4444">이탈 구독자</div>
+              <div class="pb-track"><div class="pb-fill" style="width:80%;background:#EF4444"></div></div>
+              <div class="pb-val" style="color:#EF4444">-487명</div>
+            </div>
+          </div>
+          <div class="pulse-formula">
+            Pulse Ratio = (310 + 89) / 487 = <b style="color:#EF4444">0.82</b><br>
+            이탈이 유입보다 <b>88명</b> 많음 · 즉각 재결제율 개선 필요
+          </div>
+          <div style="font-size:8.5px;color:var(--t3);background:#FEF2F2;border-radius:6px;padding:6px 8px;border-left:2px solid #EF4444">
+            복귀 구독자 89명은 신규와 <b style="color:var(--t2)">반드시 분리</b> 관리 — 무료체험 제공 불가, 이탈 경험 있어 다른 UX 필요
+          </div>
+        </div>
+      </div>
+
+      <!-- 리텐션 베이스라인 곡선 -->
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-num">3</div>
+          <div>
+            <div class="card-title">리텐션 베이스라인 곡선</div>
+            <div class="card-sub">Amplitude 방식 · 베이스라인이 평평해야 유입 확대 의미 있음</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="retentionChart"></canvas></div>
+        <div class="retention-legend">
+          <div class="ret-leg"><div class="ret-dot" style="background:var(--c2)"></div>2024.01 코호트</div>
+          <div class="ret-leg"><div class="ret-dot" style="background:var(--c3)"></div>2024.03 코호트</div>
+          <div class="ret-leg"><div class="ret-dot" style="background:var(--c5);border:1px solid var(--c3)"></div>이상적 곡선</div>
+        </div>
       </div>
     </div>
 
+    <!-- ROW 3: 좌절 경험률 + RFM + 이탈 원인 -->
     <div class="row3">
-      <!-- OKR 달성률 바 -->
+
+      <!-- 좌절 경험률 vs 구독 취소율 -->
       <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c2)">3</div>
-          <div class="sec-text">
-            <div class="sec-title">OKR 달성률</div>
-            <div class="sec-sub">목표별 Key Result 진행 현황</div>
+        <div class="card-hd">
+          <div class="card-num">4</div>
+          <div>
+            <div class="card-title">좌절 경험률 vs 구독 취소율</div>
+            <div class="card-sub">핵심기능 미제공 비율과 이탈율 상관관계 · 주별 추이</div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="roiChart"></canvas></div>
+        <div class="frust-list" id="frustList"></div>
+        <div style="font-size:8.5px;color:var(--t3);margin-top:6px;padding:5px 7px;background:var(--bg);border-radius:6px;flex-shrink:0;line-height:1.5">
+          상관계수 r = <b style="color:var(--c2)">0.89</b> — 좌절 경험률 1%p 상승 시 취소율 약 <b style="color:#EF4444">+0.4%p</b> 증가
+        </div>
       </div>
-      <!-- 스프린트 번다운 -->
+
+      <!-- RFM 세그먼트 -->
       <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c3)">4</div>
-          <div class="sec-text">
-            <div class="sec-title">스프린트 번다운</div>
-            <div class="sec-sub">Sprint 6 · 이상적 번다운 vs 실제</div>
+        <div class="card-hd">
+          <div class="card-num">5</div>
+          <div>
+            <div class="card-title">RFM 세그먼트 분포</div>
+            <div class="card-sub">충성→이탈 위험 구간 분류 · 신규 구독자 별도 분리</div>
           </div>
         </div>
-        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+        <div class="rfm-grid" id="rfmGrid"></div>
       </div>
-      <!-- 부서별 KPI 히트맵 -->
+
+      <!-- 이탈 원인 (행동 데이터 교차) -->
       <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c3)">5</div>
-          <div class="sec-text">
-            <div class="sec-title">부서별 KPI 달성 히트맵</div>
-            <div class="sec-sub">목표 대비 달성률 · 색상 강도 = 달성도</div>
+        <div class="card-hd">
+          <div class="card-num">6</div>
+          <div>
+            <div class="card-title">이탈 원인 분석</div>
+            <div class="card-sub">설문 + 행동 데이터 교차 검증 · 괴리 주의</div>
           </div>
         </div>
-        <div class="hm-col-labels" id="hmColLabels"></div>
-        <div class="heatmap-wrap" id="heatmap"></div>
+        <div class="cause-list" id="causeList"></div>
       </div>
     </div>
 
+    <!-- ROW 4: AI 인사이트 + Input Metric 상태 테이블 -->
     <div class="row4">
+
       <!-- AI 인사이트 -->
       <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c3)">6</div>
-          <div class="sec-text">
-            <div class="sec-title">AI 인사이트 & 리스크</div>
-            <div class="sec-sub">Claude 자동 분석 · 우선순위 액션 아이템</div>
+        <div class="card-hd">
+          <div class="card-num">7</div>
+          <div>
+            <div class="card-title">AI 우선순위 분석</div>
+            <div class="card-sub">힙데비 프레임 기반 · 가설 → 검증 방법 포함</div>
           </div>
         </div>
         <div class="ai-list" id="aiList"></div>
       </div>
-      <!-- 경영진 보고용 KPI 테이블 -->
-      <div class="card">
-        <div class="sec-hd">
-          <div class="sec-num" style="background:var(--c4);color:var(--t1)">7</div>
-          <div class="sec-text">
-            <div class="sec-title">경영진 1-Page KPI 요약</div>
-            <div class="sec-sub">전략 목표별 현황 · 위험도 · 오너 · 기한</div>
+
+      <!-- Input Metric 전체 상태 테이블 -->
+      <div class="card" style="overflow:auto">
+        <div class="card-hd" style="flex-shrink:0">
+          <div class="card-num">8</div>
+          <div>
+            <div class="card-title">Input Metric 전체 현황</div>
+            <div class="card-sub">계층별 · 목표 대비 · 전주 대비 · 이동 방향 · 액션 배지</div>
           </div>
         </div>
-        <table class="perf-table" id="perfTable"></table>
+        <div style="overflow:auto;flex:1">
+          <table class="metric-table" id="metricTable"></table>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
 Chart.defaults.font.family="'Pretendard',-apple-system,sans-serif";
-const c1="#2E3B55",c2="#4A5F80",c3="#6B82A8",c4="#9BB0CC",c5="#C8D5E8";
+const c1="#2A7DB5",c2="#2E3B55",c3="#4A7AB5",c4="#85B8D8",c5="#C5DCF0";
 
-function fmt(n){
-  if(n>=1e8)return(n/1e8).toFixed(1)+"억";
-  if(n>=1e6)return(n/1e6).toFixed(1)+"M";
-  if(n>=1e3)return(n/1e3).toFixed(0)+"K";
-  return n.toLocaleString();
-}
-
-// KPI
-const kpis=[
-  {title:"OKR 달성률",val:"78%",delta:"목표 85%",warn:true},
-  {title:"스프린트 완료율",val:"84%",delta:"+6%p",up:true},
-  {title:"NPS",val:"72점",delta:"+4점 QoQ",up:true},
-  {title:"피처 완료",val:"23/28",delta:"82% 완료",up:true},
-  {title:"버그 해결율",val:"91%",delta:"+3%p",up:true},
-  {title:"배포 빈도",val:"2.3/주",delta:"+0.4",up:true},
-];
-const kpiRow=document.getElementById("kpiRow");
-kpis.forEach(k=>{
-  const div=document.createElement("div");
-  div.className="card kpi-card";
-  div.innerHTML='<div style="font-size:9.5px;color:var(--t3);margin-bottom:3px">'+k.title+'</div>'+
-    '<div class="kpi-val">'+k.val+'</div>'+
-    '<span class="delta '+(k.warn?"warn":k.up?"up":"down")+'">'+k.delta+'</span>';
-  kpiRow.appendChild(div);
-});
-
-// NPS 추이 + 스프린트 완료율
-const sprints=["S1","S2","S3","S4","S5","S6"];
-const npsData=[62,65,67,69,70,72];
-const completionData=[76,80,78,82,81,84];
-const deployData=[1.4,1.6,1.8,1.9,2.1,2.3];
-const trendCtx=document.getElementById("trendChart").getContext("2d");
-const trendChart=new Chart(trendCtx,{
-  type:"line",
-  data:{labels:sprints,datasets:[
-    {label:"NPS",data:npsData,borderColor:c1,backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3,yAxisID:"y"},
-    {label:"완료율(%)",data:completionData,borderColor:c3,backgroundColor:"transparent",borderWidth:1.8,pointRadius:3,tension:.3,yAxisID:"y2"},
-    {label:"배포빈도",data:deployData,borderColor:c5,backgroundColor:"transparent",borderWidth:1.5,pointRadius:3,tension:.3,yAxisID:"y2",borderDash:[4,3]},
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:8}},
-      tooltip:{backgroundColor:"#1B2D3D",mode:"index",intersect:false}},
-    scales:{
-      x:{grid:{color:"#E0E4E8"},ticks:{font:{size:10}}},
-      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}},title:{display:true,text:"NPS",font:{size:9}},position:"left"},
-      y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>v+"%"},position:"right"}
-    }
-  }
-});
-
-// 트렌드 필터
-const filtersWrap=document.getElementById("trendFilters");
-[{label:"NPS",color:c1},{label:"완료율",color:c3},{label:"배포",color:c5}].forEach((g,i)=>{
-  const btn=document.createElement("button");
-  btn.style.cssText="padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid "+g.color+";background:"+g.color+";color:#fff;";
-  btn.textContent=g.label;
-  btn.addEventListener("click",()=>{
-    const ds=trendChart.data.datasets[i];
-    ds.hidden=!ds.hidden;
-    btn.style.opacity=ds.hidden?"0.35":"1";
-    trendChart.update();
-  });
-  filtersWrap.appendChild(btn);
-});
-
-// 도넛: 피처 완료
-const donutCenter={
-  id:"dCenter",
-  afterDraw(chart){
-    const{ctx,chartArea:{top,bottom,left,right}}=chart;
-    const cx=(left+right)/2,cy=(top+bottom)/2;
-    ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.font="bold 14px 'Pretendard'";ctx.fillStyle="#0F1117";ctx.fillText("23/28",cx,cy-8);
-    ctx.font="10px 'Pretendard'";ctx.fillStyle="#8395A7";ctx.fillText("피처 완료",cx,cy+8);
-    ctx.restore();
-  }
+// 날짜 필터
+const dateRanges={"7d":"2024.06.24 – 06.30","30d":"2024.06.01 – 06.30","q":"2024.04.01 – 06.30","6m":"2024.01.01 – 06.30"};
+window.setDate=function(k,btn){
+  document.querySelectorAll(".date-chip").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("dateRange").textContent=dateRanges[k];
 };
-new Chart(document.getElementById("donutChart").getContext("2d"),{
-  type:"doughnut",
-  data:{labels:["완료","진행중","미착수"],datasets:[{data:[23,3,2],backgroundColor:[c1,c3,c5],borderWidth:0}]},
-  plugins:[donutCenter],
-  options:{responsive:true,maintainAspectRatio:false,cutout:"62%",
-    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:6}},tooltip:{backgroundColor:"#1B2D3D"}}}
-});
 
-// OKR 달성률 바
-const okrData=[
-  {label:"성장 · MAU +30%",val:78},
-  {label:"품질 · 버그 -50%",val:91},
-  {label:"속도 · 배포 3/주",val:72},
-  {label:"NPS · 75점",val:85},
-  {label:"비용 · CAC -20%",val:60},
-];
-const roiLabelPlugin={
-  id:"roiLabels",
-  afterDatasetsDraw(chart){
-    const{ctx,data,scales:{x}}=chart;
-    data.datasets[0].data.forEach((v,i)=>{
-      const meta=chart.getDatasetMeta(0);
-      const bar=meta.data[i];
-      const px=x.getPixelForValue(v);
-      ctx.save();ctx.font="bold 10px 'Pretendard'";ctx.fillStyle="#0F1117";ctx.textAlign="left";
-      ctx.fillText(v+"%",px+4,bar.y+4);ctx.restore();
-    });
-  }
-};
-new Chart(document.getElementById("roiChart").getContext("2d"),{
-  type:"bar",
-  data:{labels:okrData.map(d=>d.label),datasets:[{
-    data:okrData.map(d=>d.val),
-    backgroundColor:okrData.map(d=>d.val>=85?c1:d.val>=70?c3:c4),
-    borderRadius:3,barThickness:20
-  }]},
-  plugins:[roiLabelPlugin],
-  options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",
-    layout:{padding:{right:45}},
-    plugins:{legend:{display:false},tooltip:{backgroundColor:"#1B2D3D",callbacks:{label:c=>c.raw+"%"}}},
-    scales:{
-      x:{min:0,max:100,grid:{color:"#E0E4E8"},ticks:{font:{size:9},callback:v=>v+"%"}},
-      y:{grid:{display:false},ticks:{font:{size:9}}}
-    }
-  }
-});
-
-// 스프린트 번다운
-const days=Array.from({length:10},(_,i)=>i+1+"일");
-const ideal=[280,252,224,196,168,140,112,84,56,28,0];
-const actual=[280,268,250,235,210,195,178,155,140,null,null];
-new Chart(document.getElementById("scatterChart").getContext("2d"),{
-  type:"line",
-  data:{labels:[...days,"종료"],datasets:[
-    {label:"이상적",data:ideal,borderColor:c4,borderWidth:1.5,borderDash:[4,3],pointRadius:0,tension:0},
-    {label:"실제",data:actual,borderColor:c1,backgroundColor:"transparent",borderWidth:2,pointRadius:2,tension:.2},
-  ]},
-  options:{responsive:true,maintainAspectRatio:false,
-    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:6}},
-      tooltip:{backgroundColor:"#1B2D3D",mode:"index",intersect:false,callbacks:{label:c=>c.dataset.label+": "+c.raw+" SP"}}},
-    scales:{
-      x:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}}},
-      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}},title:{display:true,text:"Story Points",font:{size:9}}}
-    }
-  }
-});
-
-// 히트맵
-const hmDepts=["개발","디자인","마케팅","세일즈","CS"];
-const hmKpis=["속도","품질","NPS","성장","비용"];
-const hmData=[
-  [92,88,75,82,70],
-  [85,95,80,72,68],
-  [78,72,88,90,75],
-  [70,65,82,95,80],
-  [88,80,92,75,85],
-];
-function hmColor(val){
-  if(val>=90)return{bg:c1,txt:"#fff"};
-  if(val>=80)return{bg:c2,txt:"#fff"};
-  if(val>=70)return{bg:c3,txt:"#fff"};
-  if(val>=60)return{bg:c4,txt:c1};
-  return{bg:c5,txt:c1};
+// KPI 스파크라인
+function drawSparkline(id,data,color){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||160,H=28;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
+  const mn=Math.min(...data)*0.97,mx=Math.max(...data)*1.03,rng=mx-mn||1;
+  const pts=data.map((v,i)=>({x:2+i/(data.length-1)*(W-4),y:4+(H-8)*(1-(v-mn)/rng)}));
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,color+"40");grad.addColorStop(1,color+"00");
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,H);ctx.lineTo(pts[0].x,H);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.lineJoin="round";ctx.stroke();
+  const last=pts[pts.length-1];
+  ctx.beginPath();ctx.arc(last.x,last.y,2.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
 }
-const colLabels=document.getElementById("hmColLabels");
-hmKpis.forEach(k=>{
-  const s=document.createElement("span");
-  s.className="hm-col-lbl";s.textContent=k;
-  colLabels.appendChild(s);
+window.addEventListener("load",()=>{
+  drawSparkline("spark0",[1.1,1.0,0.95,0.9,0.88,0.85,0.82],"#EF4444");
+  drawSparkline("spark1",[76,75,74,73,73,72,71.4],"#EF4444");
+  drawSparkline("spark2",[35,35.8,36.2,36.9,37.4,37.8,38.2],c1);
+  drawSparkline("spark3",[26,25.8,25.4,25.2,25.0,24.8,24.6],"#EF4444");
+  drawSparkline("spark4",[33,35,36.8,38.1,39.4,40.2,41.3],"#EF4444");
+  drawSparkline("spark5",[63,62.4,61.8,61.2,60.4,59.6,58.9],"#EF4444");
 });
-const hm=document.getElementById("heatmap");
-hmData.forEach((row,i)=>{
-  const div=document.createElement("div");
-  div.className="hm-row";
-  div.innerHTML='<span class="hm-lbl">'+hmDepts[i]+'</span><div class="hm-cells">'+
-    row.map(v=>{const c=hmColor(v);return'<div class="hm-cell" style="background:'+c.bg+';color:'+c.txt+'">'+v+'%</div>';}).join("")+
-  '</div>';
-  hm.appendChild(div);
+
+// Metric Hierarchy Tree
+const treeData=[
+  {level:0,name:"구독 매출 (North Star)",val:"₩284M",delta:"+8.2%",deltaPos:true,tag:"NS",tagBg:c2,tagTxt:"#fff",cls:"north-star"},
+  {level:1,name:"구독자 수",val:"3,284명",delta:"-88명/주",deltaPos:false,tag:"Primary",tagBg:"#EEF2F8",tagTxt:c2,cls:"primary"},
+  {level:2,name:"재결제율",val:"71.4%",delta:"-3.2%p",deltaPos:false,tag:"Input",tagBg:c5,tagTxt:c2,cls:"input"},
+  {level:2,name:"구독 전환율",val:"24.6%",delta:"-0.8%p",deltaPos:false,tag:"Input",tagBg:c5,tagTxt:c2,cls:"input"},
+  {level:2,name:"체험 전환율",val:"38.2%",delta:"+1.4%p",deltaPos:true,tag:"Input",tagBg:c5,tagTxt:c2,cls:"input"},
+  {level:2,name:"좌절 경험률",val:"41.3%",delta:"+4.1%p",deltaPos:false,tag:"Guardrail",tagBg:"#FEF2F2",tagTxt:"#EF4444",cls:"guardrail"},
+  {level:2,name:"액티브 리텐션",val:"58.9%",delta:"-2.3%p",deltaPos:false,tag:"Guardrail",tagBg:"#FEF2F2",tagTxt:"#EF4444",cls:"guardrail"},
+];
+const tree=document.getElementById("metricTree");
+treeData.forEach(d=>{
+  const row=document.createElement("div");row.className="tree-node";
+  let indent="";
+  for(let i=0;i<d.level;i++)indent+=`<div class="tree-indent"></div>`;
+  const deltaColor=d.deltaPos?"#10B981":"#EF4444";
+  const nameTxt=d.cls==="north-star"?`<span style="color:#fff;font-weight:700;font-size:10.5px">${d.name}</span>`:
+    `<span class="tree-name">${d.name}</span>`;
+  const valTxt=d.cls==="north-star"?`<span style="color:#fff;font-weight:700;font-size:11px">${d.val}</span>`:
+    `<span class="tree-val">${d.val}</span>`;
+  row.innerHTML=indent+`<div class="tree-card ${d.cls}">
+    <span class="tree-tag" style="background:${d.tagBg};color:${d.tagTxt}">${d.tag}</span>
+    ${nameTxt}${valTxt}
+    <span class="tree-delta" style="background:${d.deltaPos?"#ECFDF5":"#FEF2F2"};color:${deltaColor}">${d.delta}</span>
+  </div>`;
+  tree.appendChild(row);
+});
+
+// 리텐션 베이스라인
+const retLabels=["M0","M1","M2","M3","M4","M5","M6","M7","M8"];
+const cohort01=[100,72,58,50,46,43,41,40,40];
+const cohort03=[100,74,62,55,51,49,null,null,null];
+const ideal=[100,75,64,58,55,53,52,51,51];
+new Chart(document.getElementById("retentionChart").getContext("2d"),{
+  type:"line",
+  data:{labels:retLabels,datasets:[
+    {label:"2024.01 코호트",data:cohort01,borderColor:c2,backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3},
+    {label:"2024.03 코호트",data:cohort03,borderColor:c3,backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3},
+    {label:"이상적 곡선",data:ideal,borderColor:c4,backgroundColor:"transparent",borderWidth:1.5,borderDash:[4,3],pointRadius:0,tension:.3},
+  ]},
+  options:{
+    responsive:true,maintainAspectRatio:false,clip:false,
+    layout:{padding:{top:5,right:10}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:"#0F172A",mode:"index",intersect:false,
+      callbacks:{label:c=>c.dataset.label+": "+(c.raw!==null?c.raw+"%":"—")}}},
+    scales:{
+      x:{grid:{color:"#F1F5F9"},ticks:{font:{size:9}}},
+      y:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>v+"%"},min:30,max:105,
+        title:{display:true,text:"잔존율 (%)",font:{size:8.5},color:"#94A3B8"}}
+    }
+  }
+});
+
+// 좌절 경험률 vs 구독 취소율
+const frustData=[
+  {week:"W-6",frust:33.0,churn:2.8},
+  {week:"W-5",frust:35.2,churn:3.0},
+  {week:"W-4",frust:36.8,churn:3.3},
+  {week:"W-3",frust:38.1,churn:3.6},
+  {week:"W-2",frust:39.4,churn:3.8},
+  {week:"W-1",frust:40.2,churn:4.0},
+  {week:"W-0",frust:41.3,churn:4.3},
+];
+const fl=document.getElementById("frustList");
+frustData.forEach(d=>{
+  const frustColor=d.frust>40?"#EF4444":d.frust>37?"#334155":c1;
+  const churnColor=d.churn>4?"#EF4444":d.churn>3.5?"#334155":"#10B981";
+  const div=document.createElement("div");div.className="frust-row";
+  div.innerHTML=`<div class="frust-week">${d.week}</div>
+    <div class="frust-track"><div class="frust-fill" style="width:${d.frust}%;background:${frustColor}"></div></div>
+    <div class="frust-val" style="color:${frustColor}">${d.frust}%</div>
+    <div class="frust-churn" style="color:${churnColor}">취소 ${d.churn}%</div>`;
+  fl.appendChild(div);
+});
+
+// RFM 세그먼트
+const rfmData=[
+  {seg:"충성 고객",pct:"14%",desc:"R↑ F↑ M↑ · 핵심 유지 대상",action:"리워드 제공",ab:"#ECFDF5",at:"#10B981"},
+  {seg:"성장 가능",pct:"22%",desc:"R↑ F↑ M↓ · 업셀 기회",action:"업셀 캠페인",ab:"#EEF2F8",at:c2},
+  {seg:"신규 구독",pct:"19%",desc:"신규 · 분리 관리 필수",action:"온보딩 강화",ab:"#EEF2F8",at:c1},
+  {seg:"이탈 위험",pct:"28%",desc:"R↓ F↓ · 재결제율 하락 주범",action:"즉시 개입",ab:"#FEF2F2",at:"#EF4444"},
+  {seg:"휴면",pct:"11%",desc:"R↓↓ F↓↓ · 윈백 가능성 낮음",action:"윈백 시도",ab:"#F5F5F5",at:"#94A3B8"},
+  {seg:"복귀 구독",pct:"6%",desc:"이탈 후 복귀 · 별도 UX 필요",action:"케어 집중",ab:"#FFFBEB",at:"#D97706"},
+];
+const rg=document.getElementById("rfmGrid");
+rfmData.forEach(d=>{
+  const div=document.createElement("div");div.className="rfm-cell";
+  div.style.background=d.pct==="28%"?"#FFF8F8":"";
+  div.innerHTML=`<div class="rfm-seg">${d.seg}</div>
+    <div class="rfm-pct">${d.pct}</div>
+    <div class="rfm-desc">${d.desc}</div>
+    <span class="rfm-action" style="background:${d.ab};color:${d.at}">${d.action}</span>`;
+  rg.appendChild(div);
+});
+
+// 이탈 원인 (설문 vs 행동 데이터 교차)
+const causeData=[
+  {rank:1,name:"핵심기능 부족",survey:42,behavior:38,match:true,action:"콘텐츠 확대",ab:"#FEF2F2",at:"#EF4444"},
+  {rank:2,name:"이용 빈도 감소",survey:28,behavior:31,match:true,action:"리인게이지",ab:"#EEF2F8",at:c2},
+  {rank:3,name:"가격 불만",survey:24,behavior:8,match:false,action:"교차 검증 필요",ab:"#FFFBEB",at:"#D97706"},
+  {rank:4,name:"대체재 발견",survey:18,behavior:22,match:true,action:"차별화 강화",ab:"#EEF2F8",at:c2},
+  {rank:5,name:"코인 수급 목적",survey:12,behavior:15,match:true,action:"락인 설계",ab:"#F5F5F5",at:"#94A3B8"},
+];
+const cl=document.getElementById("causeList");
+causeData.forEach(d=>{
+  const mismatch=!d.match;
+  const div=document.createElement("div");div.className="cause-item";
+  if(mismatch)div.style.background="#FFFBEB";
+  div.innerHTML=`<div class="cause-rank">${d.rank}</div>
+    <div class="cause-name">${d.name}${mismatch?'<span style="font-size:7.5px;color:#D97706;margin-left:4px">설문≠행동</span>':''}</div>
+    <div class="cause-bars">
+      <div class="cause-bar-row">
+        <span class="cause-bar-lbl">설문</span>
+        <div class="cause-bar-track"><div class="cause-bar-fill" style="width:${d.survey}%;background:${c3}"></div></div>
+        <span style="font-size:8px;color:var(--t3);width:20px;text-align:right">${d.survey}%</span>
+      </div>
+      <div class="cause-bar-row">
+        <span class="cause-bar-lbl">행동</span>
+        <div class="cause-bar-track"><div class="cause-bar-fill" style="width:${d.behavior}%;background:${c2}"></div></div>
+        <span style="font-size:8px;color:var(--t3);width:20px;text-align:right">${d.behavior}%</span>
+      </div>
+    </div>
+    <span class="cause-action" style="background:${d.ab};color:${d.at}">${d.action}</span>`;
+  cl.appendChild(div);
 });
 
 // AI 인사이트
 const aiItems=[
-  {num:"01",text:"<b>OKR '성장' 목표 78%</b> — MAU 목표 달성까지 잔여 22%. S7에서 그로스 캠페인 집중 필요.",tag:"우선순위",tagBg:"#EEF2FF",tagTxt:"#2E3B55"},
-  {num:"02",text:"<b>세일즈 팀 속도 KPI 70%</b> — 전체 부서 중 최저. CRM 도입 지연이 원인. S7 내 온보딩 완료 필요.",tag:"긴급",tagBg:"#FEF2F2",tagTxt:"#EF4444"},
-  {num:"03",text:"<b>스프린트 번다운 지연</b> — 10일차 기준 실제 140SP vs 이상 56SP. 범위 조정 또는 리소스 추가 검토.",tag:"모니터링",tagBg:"#FFFBEB",tagTxt:"#F59E0B"},
-  {num:"04",text:"<b>품질 KPI 91% 달성</b> — 버그 해결율 목표 초과. QA 프로세스 자동화가 효과적. 타 팀 확산 권장.",tag:"잘됨",tagBg:"#ECFDF5",tagTxt:"#10B981"},
+  {idx:"01",title:"재결제율이 최우선 — Pulse Ratio 0.82 긴급",pri:"높음",priBg:"#FEF2F2",priTxt:"#EF4444",
+   cells:[{lbl:"이탈 규모",val:"487명/주"},{lbl:"매출 위험",val:"~₩9M/주"},{lbl:"Pulse Ratio",val:"0.82 (목표>1)"},{lbl:"원인",val:"재결제율 -3.2%p"}],
+   action:"<b>힙데비 원칙:</b> 신규 유입 확대 전 재결제율 먼저. 이탈 유저 설문 + 행동 데이터 교차 → 핵심기능 부족이 1위. 4주간 콘텐츠 집중 업로드 실험 후 시계열로 재결제율 변화 추적."},
+  {idx:"02",title:"좌절 경험률 41.3% — 핵심기능 부족 구조적 문제",pri:"높음",priBg:"#FEF2F2",priTxt:"#EF4444",
+   cells:[{lbl:"주간 상승폭",val:"+4.1%p"},{lbl:"r(상관계수)",val:"0.89"},{lbl:"취소율 영향",val:"+0.4%p/1%p"},{lbl:"대상 구간",val:"검색 5건 이상"}],
+   action:"<b>검증 방법:</b> A/B 불가(동일 콘텐츠 유저별 차등 제공 불가). 시계열 분석 — 콘텐츠 확대 후 좌절 경험률 감소 → 취소율 감소 순서로 지표 추적."},
+  {idx:"03",title:"복귀 구독자 89명 — 신규와 분리 필수",pri:"중간",priBg:"#EEF2F8",priTxt:c2,
+   cells:[{lbl:"복귀 규모",val:"89명/주"},{lbl:"신규 대비",val:"22% 수준"},{lbl:"무료체험",val:"제공 불가"},{lbl:"이탈 경험",val:"있음"}],
+   action:"<b>힙데비 원칙:</b> 복귀 유저는 신규와 다른 백그라운드. 무료체험 없이 바로 결제 → 재이탈 위험. 온보딩 플로우 분리 + 1:1 케어 담당자 배정."},
 ];
-const aiList=document.getElementById("aiList");
+const al=document.getElementById("aiList");
 aiItems.forEach(item=>{
-  const div=document.createElement("div");
-  div.className="ai-item";
-  div.innerHTML='<div class="ai-num">'+item.num+'</div>'+
-    '<div class="ai-txt">'+item.text+'</div>'+
-    '<div class="ai-tag" style="background:'+item.tagBg+';color:'+item.tagTxt+'">'+item.tag+'</div>';
-  aiList.appendChild(div);
+  const div=document.createElement("div");div.className="ai-item";
+  div.innerHTML=`<div class="ai-hd"><div class="ai-idx">${item.idx}</div>
+    <div class="ai-title">${item.title}</div>
+    <span class="ai-pri" style="background:${item.priBg};color:${item.priTxt}">우선순위: ${item.pri}</span></div>
+    <div class="ai-grid">${item.cells.map(c=>`<div class="ai-cell"><div class="ai-cell-lbl">${c.lbl}</div><div class="ai-cell-val">${c.val}</div></div>`).join("")}</div>
+    <div class="ai-action">${item.action}</div>`;
+  al.appendChild(div);
 });
 
-// 테이블
-const kpiRows=[
-  {obj:"성장",kr:"MAU +30%",current:"78%",target:"100%",owner:"그로스팀",deadline:"3/31",risk:"HIGH"},
-  {obj:"품질",kr:"버그 -50%",current:"91%",target:"100%",owner:"개발팀",deadline:"3/31",risk:"LOW"},
-  {obj:"속도",kr:"배포 3회/주",current:"72%",target:"100%",owner:"DevOps",deadline:"3/31",risk:"MID"},
-  {obj:"NPS",kr:"75점 달성",current:"85%",target:"100%",owner:"PM팀",deadline:"3/31",risk:"LOW"},
-  {obj:"비용",kr:"CAC -20%",current:"60%",target:"100%",owner:"마케팅",deadline:"3/31",risk:"HIGH"},
-  {obj:"속도",kr:"스프린트 완료율 90%",current:"84%",target:"100%",owner:"개발팀",deadline:"3/31",risk:"MID"},
+// Input Metric 상태 테이블
+const metricsTable=[
+  {layer:"Input",name:"재결제율",def:"1 - 구독해지율",curr:"71.4%",target:"78%",prev:"74.6%",delta:"-3.2%p",trend:"down",action:"즉시 개선",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Input",name:"좌절 경험률",def:"핵심기능 없는 문제/검색",curr:"41.3%",target:"< 25%",prev:"37.2%",delta:"+4.1%p",trend:"down",action:"콘텐츠 확대",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Input",name:"구독 전환율",def:"결제전환/무료체험완료",curr:"24.6%",target:"28%",prev:"25.4%",delta:"-0.8%p",trend:"down",action:"UX 개선",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Input",name:"체험 전환율",def:"무료체험/핵심기능미리보기",curr:"38.2%",target:"40%",prev:"36.8%",delta:"+1.4%p",trend:"up",action:"유지",ab:"#ECFDF5",at:"#10B981"},
+  {layer:"Input",name:"액티브 리텐션",def:"핵심기능사용/W-1구독자",curr:"58.9%",target:"65%",prev:"61.2%",delta:"-2.3%p",trend:"down",action:"재인게이지",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Primary",name:"구독자 수",def:"신규+복귀+기존-이탈",curr:"3,284명",target:"3,500명",prev:"3,372명",delta:"-88명",trend:"down",action:"Pulse 개선",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Guardrail",name:"Pulse Ratio",def:"(신규+복귀)/이탈",curr:"0.82",target:"> 1.0",prev:"0.91",delta:"-0.09",trend:"down",action:"즉시 대응",ab:"#FEF2F2",at:"#EF4444"},
+  {layer:"Guardrail",name:"복귀 구독자 비율",def:"복귀/(신규+복귀)",curr:"22.3%",target:"< 30%",prev:"19.8%",delta:"+2.5%p",trend:"warn",action:"분리 관리",ab:"#FFFBEB",at:"#D97706"},
 ];
-const t=document.getElementById("perfTable");
-t.innerHTML="<thead><tr><th>목표</th><th>Key Result</th><th>달성률</th><th>오너</th><th>기한</th><th>위험도</th></tr></thead>"+
-  "<tbody>"+kpiRows.map(r=>{
-    const riskColor=r.risk==="HIGH"?"#EF4444":r.risk==="MID"?"#F59E0B":"#10B981";
-    const riskBg=r.risk==="HIGH"?"#FEF2F2":r.risk==="MID"?"#FFFBEB":"#ECFDF5";
-    return'<tr><td>'+r.obj+'</td><td>'+r.kr+'</td>'+
-      '<td style="text-align:right"><div style="display:inline-flex;align-items:center;gap:5px">'+
-        '<div style="width:50px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;display:inline-block">'+
-          '<div style="width:'+r.current+';height:100%;background:'+c1+';border-radius:3px;"></div></div>'+
-        r.current+'</div></td>'+
-      '<td>'+r.owner+'</td><td>'+r.deadline+'</td>'+
-      '<td><span style="background:'+riskBg+';color:'+riskColor+';padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700">'+r.risk+'</span></td></tr>';
+const mt=document.getElementById("metricTable");
+const layerColors={Input:{bg:"#EEF2F8",txt:c2},Primary:{bg:"#E0E8F0",txt:c2},Guardrail:{bg:"#FEF2F2",txt:"#EF4444"}};
+mt.innerHTML="<thead><tr><th style='text-align:left'>계층</th><th style='text-align:left'>지표</th><th>현재값</th><th>목표</th><th>전주</th><th>변동</th><th style='text-align:left'>권장 액션</th></tr></thead>"+
+  "<tbody>"+metricsTable.map(r=>{
+    const lc=layerColors[r.layer];
+    const dColor=r.trend==="up"?"#10B981":r.trend==="warn"?"#D97706":"#EF4444";
+    const statusDot=r.trend==="up"?"#10B981":r.trend==="warn"?"#F59E0B":"#EF4444";
+    return`<tr>
+      <td><span class="layer-badge" style="background:${lc.bg};color:${lc.txt}">${r.layer}</span></td>
+      <td><span class="status-dot" style="background:${statusDot}"></span>${r.name}<div style="font-size:8px;color:var(--t4)">${r.def}</div></td>
+      <td style="font-weight:700;color:var(--t1)">${r.curr}</td>
+      <td style="color:var(--t3)">${r.target}</td>
+      <td style="color:var(--t3)">${r.prev}</td>
+      <td style="color:${dColor};font-weight:700">${r.delta}</td>
+      <td><span style="background:${r.ab};color:${r.at};padding:2px 8px;border-radius:10px;font-size:8px;font-weight:700">${r.action}</span></td>
+    </tr>`;
   }).join("")+"</tbody>";
 </script>
 </body>
