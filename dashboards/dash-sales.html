@@ -39,6 +39,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .topbar .meta{font-size:10.5px;color:var(--t3)}
 .btn-sm{padding:5px 12px;border-radius:6px;font-size:10.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t2);font-family:var(--font)}
 .btn-pri{background:var(--c1);color:#fff;border-color:var(--c1)}
+/* 날짜 필터 */
+.date-filter-wrap{display:flex;align-items:center;gap:8px;flex:1;justify-content:center}
+.date-filter-lbl{font-size:9px;color:var(--t4);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.date-chips{display:flex;gap:3px}
+.date-chip{padding:4px 9px;border-radius:5px;font-size:9.5px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t3);font-family:var(--font);transition:all .12s}
+.date-chip:hover{background:var(--bg);color:var(--t2)}
+.date-chip.active{background:var(--c2);color:#fff;border-color:var(--c2);font-weight:600}
+.date-custom{display:flex;align-items:center;gap:4px}
+.date-input{width:70px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-size:9px;color:var(--t2);font-family:var(--font);background:var(--card);text-align:center}
+/* KPI 스파크라인 */
+.kpi-spark{display:block;width:100%;height:32px;margin-top:4px}
 
 .content{flex:1;padding:10px 14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
 
@@ -191,7 +202,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
       <h1>세일즈 리텐션 & 매출 변동 분석</h1>
       <span class="tb-badge">구독형 반복매출 · 계정 기준</span>
     </div>
-    <span class="meta">2024.01 – 06 · 코호트 6개월</span>
+    <!-- 날짜 필터 -->
+    <div class="date-filter-wrap">
+      <span class="date-filter-lbl">기준일</span>
+      <div class="date-chips">
+        <button class="date-chip" onclick="setDate('7d',this)">최근 7일</button>
+        <button class="date-chip active" onclick="setDate('30d',this)">최근 30일</button>
+        <button class="date-chip" onclick="setDate('q',this)">이번 분기</button>
+        <button class="date-chip" onclick="setDate('6m',this)">6개월</button>
+        <button class="date-chip" onclick="setDate('1y',this)">1년</button>
+      </div>
+      <div class="date-custom">
+        <input type="text" class="date-input" id="dateFrom" value="2024.01.01" readonly>
+        <span style="font-size:9px;color:var(--t4)">–</span>
+        <input type="text" class="date-input" id="dateTo" value="2024.06.30" readonly>
+      </div>
+      <div id="dateLabel" style="font-size:9px;color:var(--t3);white-space:nowrap">기준: 최근 30일 · MRR 기준</div>
+    </div>
     <div style="display:flex;gap:6px">
       <button class="btn-sm">CSV 내보내기</button>
       <button class="btn-sm btn-pri">이탈 예측 실행</button>
@@ -203,40 +230,46 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
     <!-- ROW 1: KPI - 정의 포함 -->
     <div class="row1">
       <div class="kpi">
-        <div class="kpi-lbl">MRR</div>
+        <div class="kpi-lbl">MRR <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 최근 30일</span></div>
         <div class="kpi-val">₩284M</div>
         <div class="kpi-sub"><span class="badge bg">▲ +8.2% MoM</span></div>
-        <div class="kpi-def">월간 반복매출 · 계정 기준<br>신규+확장-이탈 순합</div>
+        <canvas class="kpi-spark" id="spark0"></canvas>
+        <div class="kpi-def">월간 반복매출 · 계정 기준</div>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">M6 코호트 리텐션</div>
+        <div class="kpi-lbl">M6 코호트 리텐션 <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 2024.01</span></div>
         <div class="kpi-val">68%</div>
-        <div class="kpi-sub"><span class="badge bn">2024.01 코호트</span></div>
-        <div class="kpi-def">6개월 후 잔존 고객 비율<br>고객 계정 기준 (매출 기준 아님)</div>
+        <div class="kpi-sub"><span class="badge bn">코호트 기준</span></div>
+        <canvas class="kpi-spark" id="spark1"></canvas>
+        <div class="kpi-def">6개월 후 잔존율 · 계정 기준</div>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">평균 LTV</div>
+        <div class="kpi-lbl">평균 LTV <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 이번 분기</span></div>
         <div class="kpi-val">₩1.24M</div>
         <div class="kpi-sub"><span class="badge bg">▲ +12.4% QoQ</span></div>
-        <div class="kpi-def">계약 기간 × 월평균 매출<br>전체 고객 단순 평균</div>
+        <canvas class="kpi-spark" id="spark2"></canvas>
+        <div class="kpi-def">계약기간 × 월평균 매출 · 전체 평균</div>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">Revenue Churn</div>
+        <div class="kpi-lbl">Revenue Churn <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 최근 30일</span></div>
         <div class="kpi-val">3.2%</div>
         <div class="kpi-sub"><span class="badge bg">▼ -0.4%p MoM</span></div>
-        <div class="kpi-def">이탈 MRR / 전월 MRR<br>고객 이탈률과 다름 주의</div>
+        <canvas class="kpi-spark" id="spark3"></canvas>
+        <div class="kpi-def">이탈 MRR / 전월 MRR · 매출 기준</div>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">신규 MRR</div>
+        <div class="kpi-lbl">신규 MRR <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 최근 30일</span></div>
         <div class="kpi-val">₩42M</div>
         <div class="kpi-sub"><span class="badge bg">▲ +18.3% MoM</span></div>
-        <div class="kpi-def">신규 계약 발생 월간 매출<br>업셀/확장 별도 계산</div>
+        <canvas class="kpi-spark" id="spark4"></canvas>
+        <div class="kpi-def">신규 계약 월간 매출 · 업셀 별도</div>
       </div>
       <div class="kpi">
-        <div class="kpi-lbl">NRR</div>
+        <div class="kpi-lbl">NRR <span style="font-size:7.5px;color:var(--t4);font-weight:400">· 이번 분기</span></div>
         <div class="kpi-val">112%</div>
         <div class="kpi-sub"><span class="badge bg">▲ +3%p QoQ</span></div>
-        <div class="kpi-def">기존 고객 순매출 잔존율<br>확장 포함 · 신규 제외</div>
+        <canvas class="kpi-spark" id="spark5"></canvas>
+        <div class="kpi-def">기존 고객 순매출 잔존율 · 신규 제외</div>
       </div>
     </div>
 
@@ -396,6 +429,80 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 <script>
 Chart.defaults.font.family="'Pretendard',-apple-system,sans-serif";
 const c1="#2A7DB5",c2="#2E3B55",c3="#4A7AB5",c4="#85B8D8",c5="#C5DCF0";
+
+// ── 날짜 필터 ──
+const dateRanges={
+  "7d":{from:"2024.06.24",to:"2024.06.30",label:"최근 7일 · MRR 기준"},
+  "30d":{from:"2024.06.01",to:"2024.06.30",label:"최근 30일 · MRR 기준"},
+  "q":{from:"2024.04.01",to:"2024.06.30",label:"이번 분기(Q2) · MRR 기준"},
+  "6m":{from:"2024.01.01",to:"2024.06.30",label:"최근 6개월 · MRR 기준"},
+  "1y":{from:"2023.07.01",to:"2024.06.30",label:"최근 1년 · MRR 기준"},
+};
+window.setDate=function(key,btn){
+  document.querySelectorAll(".date-chip").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  const r=dateRanges[key];
+  document.getElementById("dateFrom").value=r.from;
+  document.getElementById("dateTo").value=r.to;
+  document.getElementById("dateLabel").textContent="기준: "+r.label;
+};
+
+// ── KPI 스파크라인 (순수 Canvas 그라디언트 영역 차트) ──
+function drawSparkline(canvasId, data, color, isDown){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.offsetWidth||180;
+  const H=32;
+  canvas.width=W*dpr;canvas.height=H*dpr;
+  canvas.style.width=W+"px";canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d");
+  ctx.scale(dpr,dpr);
+  const mn=Math.min(...data)*0.96,mx=Math.max(...data)*1.04;
+  const range=mx-mn||1;
+  const pts=data.map((v,i)=>({
+    x:2+i/(data.length-1)*(W-4),
+    y:4+(H-8)*(1-(v-mn)/range)
+  }));
+  // 그라디언트 fill
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,color+"45");
+  grad.addColorStop(1,color+"00");
+  ctx.beginPath();
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,H);
+  ctx.lineTo(pts[0].x,H);
+  ctx.closePath();
+  ctx.fillStyle=grad;
+  ctx.fill();
+  // 라인
+  ctx.beginPath();
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+  ctx.strokeStyle=color;
+  ctx.lineWidth=1.8;
+  ctx.lineJoin="round";
+  ctx.stroke();
+  // 마지막 점 강조
+  const last=pts[pts.length-1];
+  ctx.beginPath();
+  ctx.arc(last.x,last.y,3,0,Math.PI*2);
+  ctx.fillStyle=color;
+  ctx.fill();
+}
+
+// 스파크라인 데이터 (최근 8개월 트렌드)
+const sparkData=[
+  {id:"spark0",data:[242,255,261,270,278,284,292,299],color:c1},     // MRR 상승
+  {id:"spark1",data:[62,64,66,67,67,68,68,69],color:c1},             // 리텐션 상승
+  {id:"spark2",data:[0.98,1.04,1.08,1.14,1.18,1.24,1.28,1.31],color:c1},// LTV 상승
+  {id:"spark3",data:[4.2,4.0,3.9,3.7,3.5,3.2,3.1,2.9],color:"#10B981"},// Churn 하락(긍정)
+  {id:"spark4",data:[28,32,34,36,39,42,43,45],color:c1},             // 신규 MRR 상승
+  {id:"spark5",data:[104,106,108,109,110,112,113,114],color:c1},     // NRR 상승
+];
+// DOM 렌더 후 실행
+window.addEventListener("load",()=>{
+  sparkData.forEach(s=>drawSparkline(s.id,s.data,s.color));
+});
 
 function fmt(n){
   if(n>=1e8)return(n/1e8).toFixed(1)+"억";
