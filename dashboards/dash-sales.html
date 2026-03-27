@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1300">
+<title>세일즈 리텐션 분석 | Sales OS</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F2F4F7;--card:#FFFFFF;--border:#E5E7EB;
+  --sidebar:#1B2D3D;--sidebar-active:rgba(255,255,255,.12);
+  --t1:#0F1117;--t2:#374151;--t3:#6B7280;--grid:#E5E7EB;
+  /* 세일즈: 블루 계열 */
+  --c1:#1A5E8A;--c2:#2A7DB5;--c3:#4A9FD4;--c4:#85C0E8;--c5:#C0DFF4;
+  --positive:#10B981;--negative:#EF4444;--warning:#F59E0B;
+  --font:'Pretendard',-apple-system,sans-serif;--r:8px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;height:1460px;overflow:hidden;font-size:12px}
+.sidebar{width:180px;height:1460px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .brand{font-size:13px;font-weight:700;color:#fff}
+.sb-logo .sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.sb-nav{flex:1;padding:8px 0}
+.sb-nav a{display:block;padding:9px 14px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11.5px;border-left:3px solid transparent;transition:all .15s}
+.sb-nav a:hover{background:rgba(255,255,255,.06)}
+.sb-nav a.active{border-left-color:var(--c3);background:var(--sidebar-active);color:#fff;font-weight:600}
+.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.4)}
+.main{flex:1;width:1120px;display:flex;flex-direction:column;height:1460px}
+.topbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+.topbar h1{font-size:14px;font-weight:700}.topbar .meta{font-size:11px;color:var(--t3)}
+.content{flex:1;padding:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;position:relative;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.sec-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-shrink:0}
+.sec-num{width:18px;height:18px;border-radius:3px;background:var(--t1);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sec-text .sec-title{font-size:11px;font-weight:700;color:var(--t1);line-height:1.2}
+.sec-text .sec-sub{font-size:9.5px;color:var(--t3);margin-top:1px;line-height:1.3}
+.row1{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:96px;flex-shrink:0}
+.kpi-card{flex-direction:column;justify-content:center;height:96px}
+.kpi-val{font-size:18px;font-weight:700;color:var(--t1);margin:2px 0}
+.delta{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.delta.up{background:#ECFDF5;color:#10B981}.delta.down{background:#FEF2F2;color:#EF4444}.delta.warn{background:#FFFBEB;color:#F59E0B}
+.row2{display:grid;grid-template-columns:3fr 1.1fr;gap:8px;height:270px;flex-shrink:0}
+.row2 .card{height:270px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;height:270px;flex-shrink:0}
+.row3 .card{height:270px}
+.row4{display:grid;grid-template-columns:1fr 1.8fr;gap:8px;height:370px;flex-shrink:0}
+.row4 .card{height:370px}
+.chart-wrap{position:relative;flex:1;min-height:0;overflow:hidden}
+.chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+/* 코호트 히트맵 */
+.cohort-wrap{flex:1;display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.cohort-row{display:flex;gap:2px;align-items:center;}
+.cohort-lbl{font-size:9px;color:var(--t3);width:44px;text-align:right;flex-shrink:0;}
+.cohort-cells{display:flex;gap:2px;flex:1;}
+.cohort-cell{flex:1;height:20px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+.cohort-col-labels{display:flex;gap:2px;padding-left:46px;margin-bottom:2px;flex-shrink:0;}
+.cohort-col-lbl{flex:1;font-size:8px;color:var(--t3);text-align:center;}
+/* AI */
+.ai-list{display:flex;flex-direction:column;gap:6px;flex:1;}
+.ai-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--bg);border-radius:5px;border:1px solid var(--border);}
+.ai-num{width:18px;height:18px;border-radius:4px;background:var(--c1);display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff;flex-shrink:0;}
+.ai-txt{font-size:10px;color:var(--t2);line-height:1.5;flex:1;}
+.ai-txt b{color:var(--t1);}
+.ai-tag{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;align-self:flex-start;flex-shrink:0;margin-top:1px;}
+/* 테이블 */
+.perf-table{width:100%;border-collapse:collapse;font-size:11px;}
+.perf-table thead tr{border-bottom:1.5px solid var(--border)}
+.perf-table th{text-align:right;font-size:9.5px;text-transform:uppercase;color:var(--t3);padding:5px 8px;font-weight:700;white-space:nowrap}
+.perf-table th:first-child{text-align:left}
+.perf-table tbody tr{border-bottom:1px solid #f2f4f7}
+.perf-table tbody tr:hover{background:#f7f9fb}
+.perf-table td{padding:7px 8px;text-align:right;color:var(--t2);font-size:11px;}
+.perf-table td:first-child{text-align:left;color:var(--t1);font-weight:600}
+.perf-table tr:last-child td{border-bottom:none}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="brand">Sales OS</div>
+    <div class="sub">Retention & Revenue</div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#" class="active">리텐션 현황</a>
+    <a href="#">MRR 분석</a>
+    <a href="#">코호트</a>
+    <a href="#">LTV 예측</a>
+    <a href="#">이탈 분석</a>
+  </nav>
+  <div class="sb-footer">기준: 2024.06</div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <h1>리텐션 &amp; 매출 변동 분석 대시보드</html1>
+    <span class="meta">2024.01 – 06 · 코호트 6개월</span>
+  </div>
+  <div class="content">
+    <div class="row1" id="kpiRow"></div>
+    <div class="row2">
+      <!-- MRR 추이 -->
+      <div class="card">
+        <div class="sec-hd" style="align-items:center">
+          <div class="sec-num">1</div>
+          <div class="sec-text" style="flex:1">
+            <div class="sec-title">MRR 구성 추이 · 매출 예측</div>
+            <div class="sec-sub">신규 MRR · 확장 MRR · 이탈 MRR · 점선은 다항회귀 예측선</div>
+          </div>
+          <div id="trendFilters" style="display:flex;gap:4px;"></div>
+        </div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+      <!-- 도넛: MRR 구성 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c2)">2</div>
+          <div class="sec-text">
+            <div class="sec-title">MRR 구성비</div>
+            <div class="sec-sub">신규·확장·이탈 비중</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+    </div>
+    <div class="row3">
+      <!-- 코호트 리텐션 히트맵 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c2)">3</div>
+          <div class="sec-text">
+            <div class="sec-title">코호트 리텐션 히트맵</div>
+            <div class="sec-sub">월별 코호트 · M0~M5 리텐션율</div>
+          </div>
+        </div>
+        <div class="cohort-col-labels" id="cohortColLabels"></div>
+        <div class="cohort-wrap" id="cohortHeatmap"></div>
+      </div>
+      <!-- 이탈 원인 파레토 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">4</div>
+          <div class="sec-text">
+            <div class="sec-title">이탈 원인 파레토 분석</div>
+            <div class="sec-sub">Churn 원인별 비중 · 누적 80% 집중</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="roiChart"></canvas></div>
+      </div>
+      <!-- LTV 분포 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">5</div>
+          <div class="sec-text">
+            <div class="sec-title">고객 LTV 분포</div>
+            <div class="sec-sub">구간별 고객 수 · 평균 LTV ₩1.24M</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+      </div>
+    </div>
+    <div class="row4">
+      <!-- AI 인사이트 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">6</div>
+          <div class="sec-text">
+            <div class="sec-title">AI 인사이트 · 이탈 예측 알람</div>
+            <div class="sec-sub">Claude 자동 분석 · 이탈 위험 고객 조기 경보</div>
+          </div>
+        </div>
+        <div class="ai-list" id="aiList"></div>
+      </div>
+      <!-- 고객 리텐션 상세 테이블 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c4);color:var(--t1)">7</div>
+          <div class="sec-text">
+            <div class="sec-title">세그먼트별 리텐션 · 매출 변동 분석</div>
+            <div class="sec-sub">플랜별 MRR · Churn율 · NRR · LTV 비교</div>
+          </div>
+        </div>
+        <table class="perf-table" id="perfTable"></table>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+Chart.defaults.font.family="'Pretendard',-apple-system,sans-serif";
+const c1="#1A5E8A",c2="#2A7DB5",c3="#4A9FD4",c4="#85C0E8",c5="#C0DFF4";
+
+function fmt(n){
+  if(n>=1e8)return(n/1e8).toFixed(1)+"억";
+  if(n>=1e6)return(n/1e6).toFixed(1)+"M";
+  if(n>=1e3)return(n/1e3).toFixed(0)+"K";
+  return n.toLocaleString();
+}
+
+// KPI
+const kpis=[
+  {title:"MRR",val:"₩284M",delta:"+8.2% MoM",up:true},
+  {title:"코호트 리텐션",val:"68%",delta:"M6 기준",up:true},
+  {title:"평균 LTV",val:"₩1.24M",delta:"+12.4%",up:true},
+  {title:"Churn율",val:"3.2%",delta:"-0.4%p",up:true},
+  {title:"신규 MRR",val:"₩42M",delta:"+18.3%",up:true},
+  {title:"NRR",val:"112%",delta:"+3%p",up:true},
+];
+const kpiRow=document.getElementById("kpiRow");
+kpis.forEach(k=>{
+  const div=document.createElement("div");div.className="card kpi-card";
+  div.innerHTML='<div style="font-size:9.5px;color:var(--t3);margin-bottom:3px">'+k.title+'</div>'+
+    '<div class="kpi-val">'+k.val+'</div>'+
+    '<span class="delta '+(k.up?"up":"down")+'">'+k.delta+'</span>';
+  kpiRow.appendChild(div);
+});
+
+// MRR 추이
+const months=["1월","2월","3월","4월","5월","6월"];
+const newMRR=[38,40,39,41,42,42];
+const expMRR=[12,14,15,16,17,19];
+const churnMRR=[-8,-7,-8,-7,-7,-6];
+const totalMRR=[242,255,261,270,278,284];
+
+const trendCtx=document.getElementById("trendChart").getContext("2d");
+const trendChart=new Chart(trendCtx,{
+  type:"bar",
+  data:{labels:months,datasets:[
+    {type:"bar",label:"신규 MRR",data:newMRR,backgroundColor:c1,borderRadius:3,stack:"s"},
+    {type:"bar",label:"확장 MRR",data:expMRR,backgroundColor:c3,borderRadius:3,stack:"s"},
+    {type:"bar",label:"이탈 MRR",data:churnMRR,backgroundColor:"#EF4444",borderRadius:3,stack:"s"},
+    {type:"line",label:"Total MRR",data:totalMRR,borderColor:c1,backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3,yAxisID:"y2"},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:6}},
+      tooltip:{backgroundColor:"#1B2D3D",mode:"index",intersect:false,callbacks:{label:c=>c.dataset.label+": ₩"+fmt(Math.abs(c.raw))+"M"}}},
+    scales:{
+      x:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}}},
+      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9},callback:v=>"₩"+v+"M"},stacked:true},
+      y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>"₩"+v+"M"},position:"right"}
+    }
+  }
+});
+
+// 트렌드 필터
+const filtersWrap=document.getElementById("trendFilters");
+[{label:"신규",color:c1},{label:"확장",color:c3},{label:"이탈",color:"#EF4444"},{label:"Total",color:c1}].forEach((g,i)=>{
+  const btn=document.createElement("button");
+  btn.style.cssText="padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid "+g.color+";background:"+g.color+";color:#fff;";
+  btn.textContent=g.label;
+  btn.addEventListener("click",()=>{
+    const ds=trendChart.data.datasets[i];
+    ds.hidden=!ds.hidden;
+    btn.style.opacity=ds.hidden?"0.35":"1";
+    trendChart.update();
+  });
+  filtersWrap.appendChild(btn);
+});
+
+// 도넛
+const donutCenter={id:"dC",afterDraw(chart){
+  const{ctx,chartArea:{top,bottom,left,right}}=chart;
+  const cx=(left+right)/2,cy=(top+bottom)/2;
+  ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.font="bold 13px 'Pretendard'";ctx.fillStyle="#0F1117";ctx.fillText("₩284M",cx,cy-8);
+  ctx.font="10px 'Pretendard'";ctx.fillStyle="#8395A7";ctx.fillText("총 MRR",cx,cy+8);
+  ctx.restore();
+}};
+new Chart(document.getElementById("donutChart").getContext("2d"),{
+  type:"doughnut",
+  data:{labels:["신규 MRR","확장 MRR","이탈 MRR","기존 MRR"],datasets:[{data:[42,19,6,217],backgroundColor:[c1,c3,"#EF4444",c5],borderWidth:0}]},
+  plugins:[donutCenter],
+  options:{responsive:true,maintainAspectRatio:false,cutout:"62%",
+    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:4}},tooltip:{backgroundColor:"#1B2D3D"}}}
+});
+
+// 코호트 히트맵
+const cohortMonths=["2024.01","2024.02","2024.03","2024.04","2024.05","2024.06"];
+const mLabels=["M0","M1","M2","M3","M4","M5"];
+const cohortData=[
+  [100,72,64,60,58,56],
+  [100,74,67,63,60,null],
+  [100,70,62,58,null,null],
+  [100,75,68,null,null,null],
+  [100,73,null,null,null,null],
+  [100,null,null,null,null,null],
+];
+function cohortColor(v){
+  if(v===null)return{bg:"#F9FAFB",txt:"#E5E7EB"};
+  if(v>=80)return{bg:c1,txt:"#fff"};
+  if(v>=70)return{bg:c2,txt:"#fff"};
+  if(v>=60)return{bg:c3,txt:"#fff"};
+  if(v>=50)return{bg:c4,txt:c1};
+  return{bg:c5,txt:c1};
+}
+const colLabelsEl=document.getElementById("cohortColLabels");
+mLabels.forEach(m=>{const s=document.createElement("span");s.className="cohort-col-lbl";s.textContent=m;colLabelsEl.appendChild(s);});
+const chWrap=document.getElementById("cohortHeatmap");
+cohortData.forEach((row,i)=>{
+  const div=document.createElement("div");div.className="cohort-row";
+  div.innerHTML='<span class="cohort-lbl">'+cohortMonths[i].replace("2024.","")+'월</span><div class="cohort-cells">'+
+    row.map(v=>{const c=cohortColor(v);return'<div class="cohort-cell" style="background:'+c.bg+';color:'+c.txt+'">'+(v!==null?v+"%":"")+'</div>';}).join("")+'</div>';
+  chWrap.appendChild(div);
+});
+
+// 이탈 원인 파레토
+const churnReasons=[
+  {reason:"가격 불만",pct:32},{reason:"기능 부족",pct:24},{reason:"경쟁사 이탈",pct:18},
+  {reason:"사용 불편",pct:12},{reason:"예산 삭감",pct:8},{reason:"기타",pct:6},
+];
+let cumulative=0;
+const cumulativeData=churnReasons.map(r=>{cumulative+=r.pct;return cumulative;});
+const parLabel={id:"pL",afterDatasetsDraw(chart){
+  const{ctx,data,scales:{x,y2}}=chart;
+  if(!chart.getDatasetMeta(1))return;
+  chart.getDatasetMeta(1).data.forEach((pt,i)=>{
+    ctx.save();ctx.font="bold 9px 'Pretendard'";ctx.fillStyle="#0F1117";
+    ctx.textAlign="center";ctx.fillText(cumulativeData[i]+"%",pt.x,pt.y-5);ctx.restore();
+  });
+}};
+new Chart(document.getElementById("roiChart").getContext("2d"),{
+  type:"bar",
+  data:{labels:churnReasons.map(r=>r.reason),datasets:[
+    {type:"bar",label:"비중",data:churnReasons.map(r=>r.pct),backgroundColor:[c1,c2,c3,c4,c5,"#E5E7EB"],borderRadius:3,yAxisID:"y"},
+    {type:"line",label:"누적",data:cumulativeData,borderColor:"#EF4444",backgroundColor:"transparent",borderWidth:1.5,pointRadius:3,yAxisID:"y2"},
+  ]},
+  plugins:[parLabel],
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:"#1B2D3D"}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:9}}},
+      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9},callback:v=>v+"%"},max:40},
+      y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>v+"%"},position:"right",max:110,
+        afterDraw(chart){
+          const{ctx,scales:{y2}}=chart;
+          const px=y2.getPixelForValue(80);
+          ctx.save();ctx.strokeStyle="#F59E0B";ctx.lineWidth=1;ctx.setLineDash([3,3]);
+          ctx.beginPath();ctx.moveTo(chart.chartArea.left,px);ctx.lineTo(chart.chartArea.right,px);ctx.stroke();
+          ctx.font="9px 'Pretendard'";ctx.fillStyle="#F59E0B";ctx.textAlign="right";
+          ctx.fillText("80% 집중",chart.chartArea.right-2,px-4);ctx.restore();
+        }}
+    }
+  }
+});
+
+// LTV 분포
+const ltvLabels=["~₩200K","~₩500K","~₩1M","~₩2M","~₩5M","₩5M+"];
+const ltvData=[12,22,34,18,9,5];
+new Chart(document.getElementById("scatterChart").getContext("2d"),{
+  type:"bar",
+  data:{labels:ltvLabels,datasets:[{
+    label:"고객 수(%)",data:ltvData,
+    backgroundColor:[c5,c4,c3,c2,c1,"#0E3D5A"],
+    borderRadius:4,barThickness:36
+  }]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:"#1B2D3D",callbacks:{label:c=>c.raw+"%"}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:9}}},
+      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9},callback:v=>v+"%"},max:40}
+    }
+  }
+});
+
+// AI 인사이트
+const aiItems=[
+  {num:"01",text:"<b>2024.01 코호트 M5 리텐션 56%</b> — 2024.04 코호트 M1 리텐션 75% 대비 19%p 차이. 온보딩 플로우 개선 전·후 차이로 분석됨.",tag:"인사이트",tagBg:"#EEF8FF",tagTxt:"#1A5E8A"},
+  {num:"02",text:"<b>가격 불만 + 기능 부족 = 이탈 56%</b> — 파레토 상위 2개 원인. 스탠다드 → 프로 업셀 전환 시 LTV +2.4배 확인.",tag:"권고",tagBg:"#FFFBEB",tagTxt:"#F59E0B"},
+  {num:"03",text:"<b>NRR 112% 달성</b> — 확장 MRR ₩19M이 이탈 MRR ₩6M의 3.2배. 업셀 중심 성장 구조 확인. 유지 권장.",tag:"잘됨",tagBg:"#ECFDF5",tagTxt:"#10B981"},
+  {num:"04",text:"<b>이탈 위험 고객 12명 감지</b> — 3개월 연속 로그인 감소 + 서포트 티켓 2건 이상. 즉시 CSM 아웃리치 권장.",tag:"긴급",tagBg:"#FEF2F2",tagTxt:"#EF4444"},
+];
+const aiList=document.getElementById("aiList");
+aiItems.forEach(item=>{
+  const div=document.createElement("div");div.className="ai-item";
+  div.innerHTML='<div class="ai-num">'+item.num+'</div><div class="ai-txt">'+item.text+'</div>'+
+    '<div class="ai-tag" style="background:'+item.tagBg+';color:'+item.tagTxt+'">'+item.tag+'</div>';
+  aiList.appendChild(div);
+});
+
+// 테이블
+const segments=[
+  {plan:"스타터",customers:284,mrr:"₩28.4M",churn:"5.2%",nrr:"98%",ltv:"₩420K",trend:"▼"},
+  {plan:"프로",customers:156,mrr:"₩124.8M",churn:"2.8%",nrr:"118%",ltv:"₩1.82M",trend:"▲"},
+  {plan:"비즈니스",customers:62,mrr:"₩93.0M",churn:"1.4%",nrr:"124%",ltv:"₩3.24M",trend:"▲"},
+  {plan:"엔터프라이즈",customers:18,mrr:"₩36.0M",churn:"0.6%",nrr:"131%",ltv:"₩8.10M",trend:"▲"},
+  {plan:"합계/평균",customers:520,mrr:"₩282.2M",churn:"3.2%",nrr:"112%",ltv:"₩1.24M",trend:"▲"},
+];
+const t=document.getElementById("perfTable");
+t.innerHTML="<thead><tr><th>플랜</th><th>고객 수</th><th>MRR</th><th>Churn율</th><th>NRR</th><th>평균 LTV</th><th>추이</th></tr></thead>"+
+  "<tbody>"+segments.map((s,i)=>{
+    const isLast=i===segments.length-1;
+    const churnColor=parseFloat(s.churn)>4?"#EF4444":parseFloat(s.churn)>2?"#F59E0B":"#10B981";
+    const churnBg=parseFloat(s.churn)>4?"#FEF2F2":parseFloat(s.churn)>2?"#FFFBEB":"#ECFDF5";
+    return'<tr style="'+(isLast?"border-top:1.5px solid var(--border);font-weight:700":"")+'">'+
+      '<td>'+s.plan+'</td><td>'+s.customers.toLocaleString()+'</td><td>'+s.mrr+'</td>'+
+      '<td><span style="background:'+churnBg+';color:'+churnColor+';padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700">'+s.churn+'</span></td>'+
+      '<td style="color:'+(parseFloat(s.nrr)>=110?"#10B981":"#374151");
+    }).join("").replace(/(<\/td>)(<td style="color:[^"]*">)([\d.]+%)/g,'$1$2$3')
+    // fallback: rebuild properly
++"</tbody>";
+
+// Rebuild table properly
+let tbody="<tbody>";
+segments.forEach((s,i)=>{
+  const isLast=i===segments.length-1;
+  const churnVal=parseFloat(s.churn);
+  const nrrVal=parseFloat(s.nrr);
+  const churnColor=churnVal>4?"#EF4444":churnVal>2?"#F59E0B":"#10B981";
+  const churnBg=churnVal>4?"#FEF2F2":churnVal>2?"#FFFBEB":"#ECFDF5";
+  const nrrColor=nrrVal>=110?"#10B981":"#374151";
+  const trendColor=s.trend==="▲"?"#10B981":"#EF4444";
+  tbody+='<tr style="'+(isLast?"border-top:1.5px solid var(--border)":"")+'">'+
+    '<td>'+s.plan+'</td>'+
+    '<td>'+s.customers.toLocaleString()+'명</td>'+
+    '<td>'+s.mrr+'</td>'+
+    '<td><span style="background:'+churnBg+';color:'+churnColor+';padding:1px 5px;border-radius:3px;font-size:9px;font-weight:700">'+s.churn+'</span></td>'+
+    '<td style="color:'+nrrColor+';font-weight:'+(nrrVal>=110?700:400)+'">'+s.nrr+'</td>'+
+    '<td>'+s.ltv+'</td>'+
+    '<td style="color:'+trendColor+';font-weight:700">'+s.trend+'</td></tr>';
+});
+tbody+="</tbody>";
+t.innerHTML="<thead><tr><th>플랜</th><th>고객 수</th><th>MRR</th><th>Churn율</th><th>NRR</th><th>평균 LTV</th><th>추이</th></tr></thead>"+tbody;
+</script>
+</body>
+</html>

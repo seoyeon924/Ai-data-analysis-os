@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1300">
+<title>PM 전략 KPI 맵 | PM OS</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F2F4F7;--card:#FFFFFF;--border:#E5E7EB;
+  --sidebar:#1B2D3D;--sidebar-active:rgba(255,255,255,.12);
+  --t1:#0F1117;--t2:#374151;--t3:#6B7280;--grid:#E5E7EB;
+  /* PM KPI: 네이비 계열 */
+  --c1:#2E3B55;--c2:#4A5F80;--c3:#6B82A8;--c4:#9BB0CC;--c5:#C8D5E8;
+  --positive:#10B981;--negative:#EF4444;--warning:#F59E0B;
+  --font:'Pretendard',-apple-system,sans-serif;--r:8px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;height:1460px;overflow:hidden;font-size:12px}
+.sidebar{width:180px;height:1460px;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:14px 14px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo .brand{font-size:13px;font-weight:700;color:#fff}
+.sb-logo .sub{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px}
+.sb-nav{flex:1;padding:8px 0}
+.sb-nav a{display:block;padding:9px 14px;color:rgba(255,255,255,.6);text-decoration:none;font-size:11.5px;border-left:3px solid transparent;transition:all .15s}
+.sb-nav a:hover{background:rgba(255,255,255,.06)}
+.sb-nav a.active{border-left-color:var(--c3);background:var(--sidebar-active);color:#fff;font-weight:600}
+.sb-footer{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:10px;color:rgba(255,255,255,.4)}
+.main{flex:1;width:1120px;display:flex;flex-direction:column;height:1460px}
+.topbar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--border);background:var(--card);flex-shrink:0}
+.topbar h1{font-size:14px;font-weight:700}
+.topbar .meta{font-size:11px;color:var(--t3)}
+.content{flex:1;padding:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;position:relative;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.sec-hd{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;flex-shrink:0}
+.sec-num{width:18px;height:18px;border-radius:3px;background:var(--t1);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.sec-text .sec-title{font-size:11px;font-weight:700;color:var(--t1);line-height:1.2}
+.sec-text .sec-sub{font-size:9.5px;color:var(--t3);margin-top:1px;line-height:1.3}
+.row1{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;height:96px;flex-shrink:0}
+.kpi-card{flex-direction:column;justify-content:center;height:96px}
+.kpi-val{font-size:18px;font-weight:700;color:var(--t1);margin:2px 0}
+.delta{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:600}
+.delta.up{background:#ECFDF5;color:#10B981}
+.delta.down{background:#FEF2F2;color:#EF4444}
+.delta.warn{background:#FFFBEB;color:#F59E0B}
+.row2{display:grid;grid-template-columns:3fr 1.1fr;gap:8px;height:270px;flex-shrink:0}
+.row2 .card{height:270px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;height:270px;flex-shrink:0}
+.row3 .card{height:270px}
+.row4{display:grid;grid-template-columns:1fr 1.8fr;gap:8px;height:370px;flex-shrink:0}
+.row4 .card{height:370px}
+.chart-wrap{position:relative;flex:1;min-height:0;overflow:hidden}
+.chart-wrap canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+/* OKR 트리 */
+.okr-tree{display:flex;flex-direction:column;gap:6px;flex:1;overflow:auto;}
+.okr-obj{border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.okr-obj-hd{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--c1);cursor:pointer;}
+.okr-obj-hd .obj-title{font-size:10.5px;font-weight:700;color:#fff;flex:1;}
+.okr-obj-hd .obj-pct{font-size:11px;font-weight:800;color:#fff;}
+.okr-obj-hd .obj-bar{width:60px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
+.okr-obj-hd .obj-bar-fill{height:100%;background:#fff;border-radius:2px;}
+.okr-krs{padding:0 10px;}
+.okr-kr-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bg);}
+.okr-kr-row:last-child{border-bottom:none;}
+.kr-name{font-size:10px;color:var(--t2);flex:1;}
+.kr-track{width:80px;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.kr-fill{height:100%;border-radius:3px;}
+.kr-pct{font-size:10px;font-weight:700;width:32px;text-align:right;flex-shrink:0;}
+/* 히트맵 */
+.heatmap-wrap{flex:1;display:flex;flex-direction:column;gap:3px;overflow:hidden;}
+.hm-row{display:flex;align-items:center;gap:3px;}
+.hm-lbl{font-size:9px;color:var(--t3);width:60px;text-align:right;flex-shrink:0;}
+.hm-cells{display:flex;gap:3px;flex:1;}
+.hm-cell{flex:1;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;}
+.hm-col-labels{display:flex;gap:3px;padding-left:63px;margin-bottom:2px;}
+.hm-col-lbl{flex:1;font-size:8.5px;color:var(--t3);text-align:center;}
+/* 리스크 매트릭스 */
+.risk-wrap{flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center;}
+.risk-row{display:flex;align-items:center;gap:8px;}
+.risk-name{font-size:10px;color:var(--t2);width:110px;flex-shrink:0;}
+.risk-impact{font-size:9px;font-weight:700;width:32px;text-align:center;flex-shrink:0;}
+.risk-bar-wrap{flex:1;height:14px;background:var(--bg);border-radius:3px;overflow:hidden;}
+.risk-bar{height:100%;border-radius:3px;}
+.risk-prob{font-size:9px;color:var(--t3);width:36px;text-align:right;flex-shrink:0;}
+/* AI 액션 */
+.ai-list{display:flex;flex-direction:column;gap:6px;flex:1;}
+.ai-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--bg);border-radius:5px;border:1px solid var(--border);}
+.ai-num{width:18px;height:18px;border-radius:4px;background:var(--c1);display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;color:#fff;flex-shrink:0;}
+.ai-txt{font-size:10px;color:var(--t2);line-height:1.5;flex:1;}
+.ai-txt b{color:var(--t1);}
+.ai-tag{font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;align-self:flex-start;flex-shrink:0;margin-top:1px;}
+/* 테이블 */
+.perf-table{width:100%;border-collapse:collapse;font-size:11px;}
+.perf-table thead tr{border-bottom:1.5px solid var(--border)}
+.perf-table th{text-align:right;font-size:9.5px;text-transform:uppercase;color:var(--t3);padding:5px 8px;font-weight:700;white-space:nowrap}
+.perf-table th:first-child{text-align:left}
+.perf-table tbody tr{border-bottom:1px solid #f2f4f7}
+.perf-table tbody tr:hover{background:#f7f9fb}
+.perf-table td{padding:7px 8px;text-align:right;color:var(--t2);font-size:11px;}
+.perf-table td:first-child{text-align:left;color:var(--t1);font-weight:600}
+.perf-table tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;margin-left:4px}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="brand">PM OS</div>
+    <div class="sub">Strategy KPI Map</div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#" class="active">OKR 현황</a>
+    <a href="#">스프린트</a>
+    <a href="#">NPS 추이</a>
+    <a href="#">리스크</a>
+    <a href="#">로드맵</a>
+  </nav>
+  <div class="sb-footer">Q1 2024 · Sprint 6</div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <h1>PM 전략 KPI 맵 대시보드</h1>
+    <span class="meta">2024.01 – 03 · Sprint 6 진행중</span>
+  </div>
+  <div class="content">
+    <div class="row1" id="kpiRow"></div>
+
+    <div class="row2">
+      <!-- NPS 추이 라인 -->
+      <div class="card">
+        <div class="sec-hd" style="align-items:center">
+          <div class="sec-num">1</div>
+          <div class="sec-text" style="flex:1">
+            <div class="sec-title">NPS · 스프린트 KPI 추이</div>
+            <div class="sec-sub">분기별 NPS 점수 · 스프린트 완료율 · 피처 출시 빈도 복합 추이</div>
+          </div>
+          <div id="trendFilters" style="display:flex;gap:4px;"></div>
+        </div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+      </div>
+      <!-- 도넛: 피처 완료 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c2)">2</div>
+          <div class="sec-text">
+            <div class="sec-title">피처 완료율</div>
+            <div class="sec-sub">Q1 목표 대비 실적</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="row3">
+      <!-- OKR 달성률 바 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c2)">3</div>
+          <div class="sec-text">
+            <div class="sec-title">OKR 달성률</div>
+            <div class="sec-sub">목표별 Key Result 진행 현황</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="roiChart"></canvas></div>
+      </div>
+      <!-- 스프린트 번다운 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">4</div>
+          <div class="sec-text">
+            <div class="sec-title">스프린트 번다운</div>
+            <div class="sec-sub">Sprint 6 · 이상적 번다운 vs 실제</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="scatterChart"></canvas></div>
+      </div>
+      <!-- 부서별 KPI 히트맵 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">5</div>
+          <div class="sec-text">
+            <div class="sec-title">부서별 KPI 달성 히트맵</div>
+            <div class="sec-sub">목표 대비 달성률 · 색상 강도 = 달성도</div>
+          </div>
+        </div>
+        <div class="hm-col-labels" id="hmColLabels"></div>
+        <div class="heatmap-wrap" id="heatmap"></div>
+      </div>
+    </div>
+
+    <div class="row4">
+      <!-- AI 인사이트 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c3)">6</div>
+          <div class="sec-text">
+            <div class="sec-title">AI 인사이트 & 리스크</div>
+            <div class="sec-sub">Claude 자동 분석 · 우선순위 액션 아이템</div>
+          </div>
+        </div>
+        <div class="ai-list" id="aiList"></div>
+      </div>
+      <!-- 경영진 보고용 KPI 테이블 -->
+      <div class="card">
+        <div class="sec-hd">
+          <div class="sec-num" style="background:var(--c4);color:var(--t1)">7</div>
+          <div class="sec-text">
+            <div class="sec-title">경영진 1-Page KPI 요약</div>
+            <div class="sec-sub">전략 목표별 현황 · 위험도 · 오너 · 기한</div>
+          </div>
+        </div>
+        <table class="perf-table" id="perfTable"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.defaults.font.family="'Pretendard',-apple-system,sans-serif";
+const c1="#2E3B55",c2="#4A5F80",c3="#6B82A8",c4="#9BB0CC",c5="#C8D5E8";
+
+function fmt(n){
+  if(n>=1e8)return(n/1e8).toFixed(1)+"억";
+  if(n>=1e6)return(n/1e6).toFixed(1)+"M";
+  if(n>=1e3)return(n/1e3).toFixed(0)+"K";
+  return n.toLocaleString();
+}
+
+// KPI
+const kpis=[
+  {title:"OKR 달성률",val:"78%",delta:"목표 85%",warn:true},
+  {title:"스프린트 완료율",val:"84%",delta:"+6%p",up:true},
+  {title:"NPS",val:"72점",delta:"+4점 QoQ",up:true},
+  {title:"피처 완료",val:"23/28",delta:"82% 완료",up:true},
+  {title:"버그 해결율",val:"91%",delta:"+3%p",up:true},
+  {title:"배포 빈도",val:"2.3/주",delta:"+0.4",up:true},
+];
+const kpiRow=document.getElementById("kpiRow");
+kpis.forEach(k=>{
+  const div=document.createElement("div");
+  div.className="card kpi-card";
+  div.innerHTML='<div style="font-size:9.5px;color:var(--t3);margin-bottom:3px">'+k.title+'</div>'+
+    '<div class="kpi-val">'+k.val+'</div>'+
+    '<span class="delta '+(k.warn?"warn":k.up?"up":"down")+'">'+k.delta+'</span>';
+  kpiRow.appendChild(div);
+});
+
+// NPS 추이 + 스프린트 완료율
+const sprints=["S1","S2","S3","S4","S5","S6"];
+const npsData=[62,65,67,69,70,72];
+const completionData=[76,80,78,82,81,84];
+const deployData=[1.4,1.6,1.8,1.9,2.1,2.3];
+const trendCtx=document.getElementById("trendChart").getContext("2d");
+const trendChart=new Chart(trendCtx,{
+  type:"line",
+  data:{labels:sprints,datasets:[
+    {label:"NPS",data:npsData,borderColor:c1,backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3,yAxisID:"y"},
+    {label:"완료율(%)",data:completionData,borderColor:c3,backgroundColor:"transparent",borderWidth:1.8,pointRadius:3,tension:.3,yAxisID:"y2"},
+    {label:"배포빈도",data:deployData,borderColor:c5,backgroundColor:"transparent",borderWidth:1.5,pointRadius:3,tension:.3,yAxisID:"y2",borderDash:[4,3]},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:8}},
+      tooltip:{backgroundColor:"#1B2D3D",mode:"index",intersect:false}},
+    scales:{
+      x:{grid:{color:"#E0E4E8"},ticks:{font:{size:10}}},
+      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}},title:{display:true,text:"NPS",font:{size:9}},position:"left"},
+      y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>v+"%"},position:"right"}
+    }
+  }
+});
+
+// 트렌드 필터
+const filtersWrap=document.getElementById("trendFilters");
+[{label:"NPS",color:c1},{label:"완료율",color:c3},{label:"배포",color:c5}].forEach((g,i)=>{
+  const btn=document.createElement("button");
+  btn.style.cssText="padding:2px 8px;border-radius:3px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid "+g.color+";background:"+g.color+";color:#fff;";
+  btn.textContent=g.label;
+  btn.addEventListener("click",()=>{
+    const ds=trendChart.data.datasets[i];
+    ds.hidden=!ds.hidden;
+    btn.style.opacity=ds.hidden?"0.35":"1";
+    trendChart.update();
+  });
+  filtersWrap.appendChild(btn);
+});
+
+// 도넛: 피처 완료
+const donutCenter={
+  id:"dCenter",
+  afterDraw(chart){
+    const{ctx,chartArea:{top,bottom,left,right}}=chart;
+    const cx=(left+right)/2,cy=(top+bottom)/2;
+    ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.font="bold 14px 'Pretendard'";ctx.fillStyle="#0F1117";ctx.fillText("23/28",cx,cy-8);
+    ctx.font="10px 'Pretendard'";ctx.fillStyle="#8395A7";ctx.fillText("피처 완료",cx,cy+8);
+    ctx.restore();
+  }
+};
+new Chart(document.getElementById("donutChart").getContext("2d"),{
+  type:"doughnut",
+  data:{labels:["완료","진행중","미착수"],datasets:[{data:[23,3,2],backgroundColor:[c1,c3,c5],borderWidth:0}]},
+  plugins:[donutCenter],
+  options:{responsive:true,maintainAspectRatio:false,cutout:"62%",
+    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:6}},tooltip:{backgroundColor:"#1B2D3D"}}}
+});
+
+// OKR 달성률 바
+const okrData=[
+  {label:"성장 · MAU +30%",val:78},
+  {label:"품질 · 버그 -50%",val:91},
+  {label:"속도 · 배포 3/주",val:72},
+  {label:"NPS · 75점",val:85},
+  {label:"비용 · CAC -20%",val:60},
+];
+const roiLabelPlugin={
+  id:"roiLabels",
+  afterDatasetsDraw(chart){
+    const{ctx,data,scales:{x}}=chart;
+    data.datasets[0].data.forEach((v,i)=>{
+      const meta=chart.getDatasetMeta(0);
+      const bar=meta.data[i];
+      const px=x.getPixelForValue(v);
+      ctx.save();ctx.font="bold 10px 'Pretendard'";ctx.fillStyle="#0F1117";ctx.textAlign="left";
+      ctx.fillText(v+"%",px+4,bar.y+4);ctx.restore();
+    });
+  }
+};
+new Chart(document.getElementById("roiChart").getContext("2d"),{
+  type:"bar",
+  data:{labels:okrData.map(d=>d.label),datasets:[{
+    data:okrData.map(d=>d.val),
+    backgroundColor:okrData.map(d=>d.val>=85?c1:d.val>=70?c3:c4),
+    borderRadius:3,barThickness:20
+  }]},
+  plugins:[roiLabelPlugin],
+  options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",
+    layout:{padding:{right:45}},
+    plugins:{legend:{display:false},tooltip:{backgroundColor:"#1B2D3D",callbacks:{label:c=>c.raw+"%"}}},
+    scales:{
+      x:{min:0,max:100,grid:{color:"#E0E4E8"},ticks:{font:{size:9},callback:v=>v+"%"}},
+      y:{grid:{display:false},ticks:{font:{size:9}}}
+    }
+  }
+});
+
+// 스프린트 번다운
+const days=Array.from({length:10},(_,i)=>i+1+"일");
+const ideal=[280,252,224,196,168,140,112,84,56,28,0];
+const actual=[280,268,250,235,210,195,178,155,140,null,null];
+new Chart(document.getElementById("scatterChart").getContext("2d"),{
+  type:"line",
+  data:{labels:[...days,"종료"],datasets:[
+    {label:"이상적",data:ideal,borderColor:c4,borderWidth:1.5,borderDash:[4,3],pointRadius:0,tension:0},
+    {label:"실제",data:actual,borderColor:c1,backgroundColor:"transparent",borderWidth:2,pointRadius:2,tension:.2},
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:"bottom",labels:{boxWidth:8,font:{size:10},padding:6}},
+      tooltip:{backgroundColor:"#1B2D3D",mode:"index",intersect:false,callbacks:{label:c=>c.dataset.label+": "+c.raw+" SP"}}},
+    scales:{
+      x:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}}},
+      y:{grid:{color:"#E0E4E8"},ticks:{font:{size:9}},title:{display:true,text:"Story Points",font:{size:9}}}
+    }
+  }
+});
+
+// 히트맵
+const hmDepts=["개발","디자인","마케팅","세일즈","CS"];
+const hmKpis=["속도","품질","NPS","성장","비용"];
+const hmData=[
+  [92,88,75,82,70],
+  [85,95,80,72,68],
+  [78,72,88,90,75],
+  [70,65,82,95,80],
+  [88,80,92,75,85],
+];
+function hmColor(val){
+  if(val>=90)return{bg:c1,txt:"#fff"};
+  if(val>=80)return{bg:c2,txt:"#fff"};
+  if(val>=70)return{bg:c3,txt:"#fff"};
+  if(val>=60)return{bg:c4,txt:c1};
+  return{bg:c5,txt:c1};
+}
+const colLabels=document.getElementById("hmColLabels");
+hmKpis.forEach(k=>{
+  const s=document.createElement("span");
+  s.className="hm-col-lbl";s.textContent=k;
+  colLabels.appendChild(s);
+});
+const hm=document.getElementById("heatmap");
+hmData.forEach((row,i)=>{
+  const div=document.createElement("div");
+  div.className="hm-row";
+  div.innerHTML='<span class="hm-lbl">'+hmDepts[i]+'</span><div class="hm-cells">'+
+    row.map(v=>{const c=hmColor(v);return'<div class="hm-cell" style="background:'+c.bg+';color:'+c.txt+'">'+v+'%</div>';}).join("")+
+  '</div>';
+  hm.appendChild(div);
+});
+
+// AI 인사이트
+const aiItems=[
+  {num:"01",text:"<b>OKR '성장' 목표 78%</b> — MAU 목표 달성까지 잔여 22%. S7에서 그로스 캠페인 집중 필요.",tag:"우선순위",tagBg:"#EEF2FF",tagTxt:"#2E3B55"},
+  {num:"02",text:"<b>세일즈 팀 속도 KPI 70%</b> — 전체 부서 중 최저. CRM 도입 지연이 원인. S7 내 온보딩 완료 필요.",tag:"긴급",tagBg:"#FEF2F2",tagTxt:"#EF4444"},
+  {num:"03",text:"<b>스프린트 번다운 지연</b> — 10일차 기준 실제 140SP vs 이상 56SP. 범위 조정 또는 리소스 추가 검토.",tag:"모니터링",tagBg:"#FFFBEB",tagTxt:"#F59E0B"},
+  {num:"04",text:"<b>품질 KPI 91% 달성</b> — 버그 해결율 목표 초과. QA 프로세스 자동화가 효과적. 타 팀 확산 권장.",tag:"잘됨",tagBg:"#ECFDF5",tagTxt:"#10B981"},
+];
+const aiList=document.getElementById("aiList");
+aiItems.forEach(item=>{
+  const div=document.createElement("div");
+  div.className="ai-item";
+  div.innerHTML='<div class="ai-num">'+item.num+'</div>'+
+    '<div class="ai-txt">'+item.text+'</div>'+
+    '<div class="ai-tag" style="background:'+item.tagBg+';color:'+item.tagTxt+'">'+item.tag+'</div>';
+  aiList.appendChild(div);
+});
+
+// 테이블
+const kpiRows=[
+  {obj:"성장",kr:"MAU +30%",current:"78%",target:"100%",owner:"그로스팀",deadline:"3/31",risk:"HIGH"},
+  {obj:"품질",kr:"버그 -50%",current:"91%",target:"100%",owner:"개발팀",deadline:"3/31",risk:"LOW"},
+  {obj:"속도",kr:"배포 3회/주",current:"72%",target:"100%",owner:"DevOps",deadline:"3/31",risk:"MID"},
+  {obj:"NPS",kr:"75점 달성",current:"85%",target:"100%",owner:"PM팀",deadline:"3/31",risk:"LOW"},
+  {obj:"비용",kr:"CAC -20%",current:"60%",target:"100%",owner:"마케팅",deadline:"3/31",risk:"HIGH"},
+  {obj:"속도",kr:"스프린트 완료율 90%",current:"84%",target:"100%",owner:"개발팀",deadline:"3/31",risk:"MID"},
+];
+const t=document.getElementById("perfTable");
+t.innerHTML="<thead><tr><th>목표</th><th>Key Result</th><th>달성률</th><th>오너</th><th>기한</th><th>위험도</th></tr></thead>"+
+  "<tbody>"+kpiRows.map(r=>{
+    const riskColor=r.risk==="HIGH"?"#EF4444":r.risk==="MID"?"#F59E0B":"#10B981";
+    const riskBg=r.risk==="HIGH"?"#FEF2F2":r.risk==="MID"?"#FFFBEB":"#ECFDF5";
+    return'<tr><td>'+r.obj+'</td><td>'+r.kr+'</td>'+
+      '<td style="text-align:right"><div style="display:inline-flex;align-items:center;gap:5px">'+
+        '<div style="width:50px;height:5px;background:var(--bg);border-radius:3px;overflow:hidden;display:inline-block">'+
+          '<div style="width:'+r.current+';height:100%;background:'+c1+';border-radius:3px;"></div></div>'+
+        r.current+'</div></td>'+
+      '<td>'+r.owner+'</td><td>'+r.deadline+'</td>'+
+      '<td><span style="background:'+riskBg+';color:'+riskColor+';padding:1px 6px;border-radius:3px;font-size:9px;font-weight:700">'+r.risk+'</span></td></tr>';
+  }).join("")+"</tbody>";
+</script>
+</body>
+</html>
