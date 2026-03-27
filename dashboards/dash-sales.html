@@ -71,8 +71,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .chart-summary{font-size:9.5px;color:var(--t2);background:#F8FAFF;border-left:2px solid var(--c1);padding:5px 8px;border-radius:0 5px 5px 0;margin-bottom:7px;flex-shrink:0;line-height:1.5}
 .chart-summary b{color:var(--t1)}
 
-/* 워터폴 SVG */
+/* 워터폴 / What-if */
 .waterfall-wrap{flex:1;min-height:0;position:relative}
+/* What-if 시뮬레이터 */
+.sim-wrap{flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.sim-row{display:flex;align-items:center;gap:8px}
+.sim-lbl{font-size:10px;color:var(--t2);width:80px;flex-shrink:0;font-weight:600}
+.sim-track{flex:1;height:4px;border-radius:2px;background:var(--border);cursor:pointer;-webkit-appearance:none;appearance:none;outline:none}
+.sim-track::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--c2);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);cursor:pointer}
+.sim-track::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--c2);border:2px solid #fff;cursor:pointer}
+.sim-val{font-size:10px;font-weight:700;color:var(--t1);width:40px;text-align:right;flex-shrink:0}
+.sim-result{background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex-shrink:0}
+.sim-res-item{text-align:center}
+.sim-res-lbl{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.sim-res-val{font-size:14px;font-weight:800;color:var(--t1);letter-spacing:-.3px}
+.sim-res-delta{font-size:9px;font-weight:700;margin-top:2px}
+/* 이상치 배너 */
+.anomaly-banner{display:flex;align-items:center;gap:8px;background:#FEF2F2;border:1px solid rgba(239,68,68,.2);border-radius:7px;padding:7px 10px;margin-bottom:8px;flex-shrink:0}
+.anomaly-banner-dot{width:8px;height:8px;border-radius:50%;background:#EF4444;flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.anomaly-banner-txt{font-size:9.5px;color:var(--t1);flex:1}
+.anomaly-banner-txt b{color:#EF4444}
+.anomaly-banner-badge{font-size:8px;font-weight:700;background:#EF4444;color:#fff;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0}
 
 /* 코호트 히트맵 */
 .cohort-hd-row{display:flex;gap:2px;padding-left:82px;margin-bottom:3px;flex-shrink:0}
@@ -239,16 +259,53 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
         <div class="chart-wrap"><canvas id="mrrChart"></canvas></div>
       </div>
 
-      <!-- 매출 워터폴 -->
+      <!-- What-if 시뮬레이터 -->
       <div class="card">
         <div class="card-hd">
           <div class="card-num">2</div>
           <div>
-            <div class="card-title">MRR 변동 워터폴 · 6월</div>
-            <div class="card-sub">기존 유지 + 신규 + 확장 − 이탈 = 순 변화</div>
+            <div class="card-title">AI What-if 시뮬레이터</div>
+            <div class="card-sub">Churn율·확장률 조정 → MRR·NRR 실시간 예측 · 다항회귀 기반</div>
           </div>
         </div>
-        <div class="waterfall-wrap" id="waterfallWrap"></div>
+        <div class="sim-wrap" id="simWrap">
+          <div class="sim-row">
+            <div class="sim-lbl">Revenue Churn</div>
+            <input type="range" id="slChurn" min="0.5" max="8" step="0.1" value="3.2" class="sim-track" oninput="updateSim()">
+            <div class="sim-val" id="vChurn">3.2%</div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-lbl">확장 MRR 비율</div>
+            <input type="range" id="slExp" min="2" max="15" step="0.5" value="6.7" class="sim-track" oninput="updateSim()">
+            <div class="sim-val" id="vExp">6.7%</div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-lbl">신규 MRR</div>
+            <input type="range" id="slNew" min="20" max="80" step="1" value="42" class="sim-track" oninput="updateSim()">
+            <div class="sim-val" id="vNew">₩42M</div>
+          </div>
+          <div class="sim-result">
+            <div class="sim-res-item">
+              <div class="sim-res-lbl">예측 MRR</div>
+              <div class="sim-res-val" id="resMRR">₩297M</div>
+              <div class="sim-res-delta" id="resMRRd" style="color:#10B981">▲ +₩13M</div>
+            </div>
+            <div class="sim-res-item">
+              <div class="sim-res-lbl">예측 NRR</div>
+              <div class="sim-res-val" id="resNRR">112%</div>
+              <div class="sim-res-delta" id="resNRRd" style="color:#10B981">유지</div>
+            </div>
+            <div class="sim-res-item">
+              <div class="sim-res-lbl">3개월 후 MRR</div>
+              <div class="sim-res-val" id="resFore">₩334M</div>
+              <div class="sim-res-delta" id="resForeDelta" style="color:#10B981">▲ +17.6%</div>
+            </div>
+          </div>
+          <div style="font-size:8.5px;color:var(--t3);line-height:1.6;padding:6px 2px;border-top:1px solid var(--border);flex-shrink:0">
+            슬라이더를 조정하면 다항회귀 모델이 MRR 변화를 실시간 예측합니다.<br>
+            <b style="color:var(--t2)">Churn 1%p 감소</b> = 약 ₩9M 순매출 개선 효과
+          </div>
+        </div>
       </div>
     </div>
 
@@ -322,6 +379,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
             <div class="card-sub">Revenue Churn · NRR · 평균 LTV · MoM · 권장 액션 배지 · 위험 행 하이라이트 · 계정 기준</div>
           </div>
         </div>
+        <div class="anomaly-banner" id="anomalyBanner">
+          <div class="anomaly-banner-dot"></div>
+          <div class="anomaly-banner-txt">자동 감지: <b>스타터 플랜 Churn 5.2%</b>가 전체 평균(3.2%) 대비 <b>+1.6 표준편차</b> 초과 — 즉시 확인 필요</div>
+          <span class="anomaly-banner-badge">이상치 감지</span>
+        </div>
         <div style="overflow:auto;flex:1">
           <table class="perf-table" id="segTable"></table>
         </div>
@@ -343,11 +405,11 @@ function fmt(n){
 }
 
 // ── MRR 스택 + 성장률 라인 ──
-const months=["1월","2월","3월","4월","5월","6월"];
-const newMRR=[38,40,39,41,42,42];
-const expMRR=[12,14,15,16,17,19];
-const churnMRR=[-8,-7,-8,-5,-5,-6];
-const growthRate=[3.2,5.1,3.8,4.4,4.1,3.9];
+const months=["1월","2월","3월","4월","5월","6월","7월(예)","8월(예)","9월(예)"];
+const newMRR=[38,40,39,41,42,42,null,null,null];
+const expMRR=[12,14,15,16,17,19,null,null,null];
+const churnMRR=[-8,-7,-8,-5,-5,-6,null,null,null];
+const growthRate=[3.2,5.1,3.8,4.4,4.1,3.9,null,null,null];
 
 const mrrCtx=document.getElementById("mrrChart").getContext("2d");
 const mrrChart=new Chart(mrrCtx,{
@@ -358,7 +420,13 @@ const mrrChart=new Chart(mrrCtx,{
     {type:"bar",label:"이탈 MRR (₩M)",data:churnMRR,backgroundColor:"#EF4444",borderRadius:3,stack:"s",yAxisID:"y"},
     {type:"line",label:"MoM 성장률 (%)",data:growthRate,borderColor:c1,backgroundColor:"transparent",
      borderWidth:2,pointRadius:3,pointBackgroundColor:c1,tension:.3,yAxisID:"y2"},
+    // 예측 데이터 (다항회귀 기반 7~9월)
+    {type:"line",label:"MRR 예측 (₩M)",data:[null,null,null,null,null,284,297,311,326],
+     borderColor:"#2E3B55",backgroundColor:"transparent",borderWidth:1.5,borderDash:[5,4],
+     pointRadius:[0,0,0,0,0,4,4,4,4],pointBackgroundColor:"#2E3B55",tension:.3,yAxisID:"y3"},
   ]},
+  // 레이블도 7~9월 추가
+
   options:{
     responsive:true,maintainAspectRatio:false,
     clip:false,
@@ -376,7 +444,8 @@ const mrrChart=new Chart(mrrCtx,{
       y:{grid:{color:"#F1F5F9"},ticks:{font:{size:9},callback:v=>"₩"+Math.abs(v)+"M"},
          title:{display:true,text:"변동 MRR (₩M) — 빨간 막대=이탈 차감",font:{size:8.5},color:"#94A3B8"},stacked:true},
       y2:{grid:{display:false},ticks:{font:{size:9},callback:v=>v+"%"},
-          title:{display:true,text:"MoM 성장률 (%)",font:{size:8.5},color:"#94A3B8"},position:"right"}
+          title:{display:true,text:"MoM 성장률 (%)",font:{size:8.5},color:"#94A3B8"},position:"right"},
+      y3:{display:false,min:200,max:380}
     }
   }
 });
@@ -394,64 +463,50 @@ const mrrFilters=document.getElementById("mrrFilters");
   mrrFilters.appendChild(btn);
 });
 
-// ── 워터폴 (SVG) ──
-const wfData=[
-  {label:"전월 MRR",val:263,type:"base",color:c2},
-  {label:"신규",val:42,type:"pos",color:c1},
-  {label:"확장",val:19,type:"pos",color:c3},
-  {label:"이탈",val:-6,type:"neg",color:"#EF4444"},
-  {label:"다운그레이드",val:-3,type:"neg",color:"#FDA4A4"},
-  {label:"6월 MRR",val:284,type:"total",color:c2},
-];
-const ww=document.getElementById("waterfallWrap");
-const W=ww.clientWidth||360,H=ww.clientHeight||200;
-const barW=36,gap=10,marginL=42,marginT=18,marginB=30;
-const plotH=H-marginT-marginB;
-const maxVal=300,minVal=240;
-const range=maxVal-minVal;
-function toY(v){return marginT+plotH*(1-(v-minVal)/range);}
+// ── What-if 시뮬레이터 ──
+const BASE_MRR=284;
+const BASE_NRR=112;
 
-let svg=`<svg width="100%" height="100%" viewBox="0 0 ${W} ${H}" font-family="Pretendard,-apple-system,sans-serif">`;
-// Y grid
-[240,260,280,300].forEach(v=>{
-  const py=toY(v);
-  svg+=`<line x1="${marginL}" y1="${py}" x2="${W-10}" y2="${py}" stroke="#F1F5F9" stroke-width="1"/>`;
-  svg+=`<text x="${marginL-4}" y="${py+4}" font-size="8" fill="#94A3B8" text-anchor="end">₩${v}M</text>`;
-});
+function updateSim(){
+  const churn=parseFloat(document.getElementById("slChurn").value);
+  const expRate=parseFloat(document.getElementById("slExp").value);
+  const newM=parseFloat(document.getElementById("slNew").value);
 
-let running=263;
-let barX=marginL+8;
-wfData.forEach((d,i)=>{
-  let top,bot,barColor=d.color;
-  if(d.type==="base"||d.type==="total"){
-    top=toY(d.val);bot=toY(minVal-5);
-    barColor=d.type==="total"?c2:c2;
-  } else if(d.type==="pos"){
-    top=toY(running+d.val);bot=toY(running);
-  } else {
-    top=toY(running);bot=toY(running+d.val);
-  }
-  const bh=Math.abs(bot-top);
-  svg+=`<rect x="${barX}" y="${Math.min(top,bot)}" width="${barW}" height="${bh}" fill="${barColor}" rx="3"/>`;
-  // 연결선 (pos/neg만)
-  if(i>0&&d.type!=="total"){
-    const prevX=barX-gap;
-    const lineY=d.type==="pos"?toY(running):toY(running+d.val);
-    svg+=`<line x1="${prevX-barW/2+8}" y1="${lineY}" x2="${barX}" y2="${lineY}" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="3,2"/>`;
-  }
-  // 값 레이블
-  const labelY=Math.min(top,bot)-4;
-  const sign=d.type==="neg"?"-₩":"+₩";
-  const valTxt=d.type==="base"||d.type==="total"?"₩"+d.val+"M":sign+Math.abs(d.val)+"M";
-  svg+=`<text x="${barX+barW/2}" y="${labelY}" font-size="9" font-weight="700" fill="${d.type==='neg'?'#EF4444':d.color}" text-anchor="middle">${valTxt}</text>`;
-  // X 레이블
-  svg+=`<text x="${barX+barW/2}" y="${H-marginB+14}" font-size="8.5" fill="#334155" text-anchor="middle">${d.label}</text>`;
-  if(d.type==="pos")running+=d.val;
-  else if(d.type==="neg")running+=d.val;
-  barX+=barW+gap;
-});
-svg+="</svg>";
-ww.innerHTML=svg;
+  document.getElementById("vChurn").textContent=churn.toFixed(1)+"%";
+  document.getElementById("vExp").textContent=expRate.toFixed(1)+"%";
+  document.getElementById("vNew").textContent="₩"+newM+"M";
+
+  // 예측 MRR = BASE + 신규 + 확장 - 이탈
+  const churnLoss=BASE_MRR*(churn/100);
+  const expGain=BASE_MRR*(expRate/100);
+  const predMRR=Math.round(BASE_MRR+newM+expGain-churnLoss);
+  const mrrDelta=predMRR-BASE_MRR;
+
+  // NRR = (기존MRR - 이탈 + 확장) / 기존MRR
+  const predNRR=Math.round(((BASE_MRR-churnLoss+expGain)/BASE_MRR)*100);
+
+  // 3개월 후 MRR (복리 성장)
+  const momGrowth=(predMRR-BASE_MRR)/BASE_MRR;
+  const fore3=Math.round(predMRR*Math.pow(1+momGrowth,3));
+  const foreDelta=((fore3-BASE_MRR)/BASE_MRR*100).toFixed(1);
+
+  document.getElementById("resMRR").textContent="₩"+predMRR+"M";
+  const mrrDEl=document.getElementById("resMRRd");
+  mrrDEl.textContent=(mrrDelta>=0?"▲ +₩":"▼ ₩")+Math.abs(mrrDelta)+"M";
+  mrrDEl.style.color=mrrDelta>=0?"#10B981":"#EF4444";
+
+  document.getElementById("resNRR").textContent=predNRR+"%";
+  const nrrD=document.getElementById("resNRRd");
+  const nrrDelta=predNRR-BASE_NRR;
+  nrrD.textContent=(nrrDelta>=0?"▲ +":"▼ ")+nrrDelta+"%p";
+  nrrD.style.color=nrrDelta>=0?"#10B981":"#EF4444";
+
+  document.getElementById("resFore").textContent="₩"+fore3+"M";
+  const foreD=document.getElementById("resForeDelta");
+  foreD.textContent=(parseFloat(foreDelta)>=0?"▲ +":"▼ ")+foreDelta+"%";
+  foreD.style.color=parseFloat(foreDelta)>=0?"#10B981":"#EF4444";
+}
+updateSim();
 
 // ── 코호트 히트맵 (분모 포함) ──
 const cohortMonths=["2024.01","2024.02","2024.03","2024.04","2024.05","2024.06"];
