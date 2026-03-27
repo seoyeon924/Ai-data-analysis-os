@@ -109,16 +109,24 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
 .ai-action b{color:var(--t1)}
 
 /* 세그먼트 테이블 */
-.perf-table{width:100%;border-collapse:collapse;font-size:10.5px}
-.perf-table thead tr{border-bottom:1.5px solid var(--border)}
-.perf-table th{font-size:8px;color:var(--t4);text-transform:uppercase;letter-spacing:.4px;padding:0 7px 6px;text-align:right;font-weight:700;white-space:nowrap}
+.perf-table{width:100%;border-collapse:collapse;font-size:11px}
+.perf-table thead{position:sticky;top:0;z-index:2;background:var(--card)}
+.perf-table thead tr{border-bottom:2px solid var(--border)}
+.perf-table th{font-size:8.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.4px;padding:0 9px 8px;text-align:right;font-weight:700;white-space:nowrap}
 .perf-table th:first-child{text-align:left}
-.perf-table tbody tr{border-bottom:1px solid #F8FAFC}
+.perf-table tbody tr{border-bottom:1px solid #F1F5F9;transition:background .1s}
 .perf-table tbody tr:hover{background:#F8FAFC}
-.perf-table td{padding:6px 7px;text-align:right;color:var(--t2);white-space:nowrap;vertical-align:middle}
-.perf-table td:first-child{text-align:left;color:var(--t1);font-weight:600}
-.perf-table tr:last-child td{border-bottom:none;font-weight:700;border-top:1.5px solid var(--border);color:var(--t1)}
-.seg-bar{display:inline-block;height:6px;border-radius:3px;background:var(--c1);vertical-align:middle;margin-right:4px}
+.perf-table tbody tr.row-danger{background:#FFF8F8;border-left:3px solid #EF4444}
+.perf-table tbody tr.row-warn{background:#FAFBFF;border-left:3px solid rgba(42,125,181,.3)}
+.perf-table td{padding:10px 9px;text-align:right;color:var(--t2);white-space:nowrap;vertical-align:middle}
+.perf-table td:first-child{text-align:left;color:var(--t1);font-weight:700;font-size:11.5px}
+.perf-table tr.total-row td{border-bottom:none;font-weight:700;border-top:2px solid var(--border);background:#F8FAFF;color:var(--t1);padding:11px 9px}
+.seg-bar{display:inline-block;height:5px;border-radius:3px;background:var(--c1);vertical-align:middle;margin-right:5px}
+.action-badge{display:inline-block;padding:3px 8px;border-radius:5px;font-size:8.5px;font-weight:700;white-space:nowrap}
+.risk-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;margin-right:5px;flex-shrink:0}
+.churn-bar-wrap{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.churn-bar-track{width:48px;height:5px;background:#F1F5F9;border-radius:3px;overflow:hidden}
+.churn-bar-fill{height:100%;border-radius:3px}
 </style>
 </head>
 <body>
@@ -311,7 +319,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--t1);display:flex;h
           <div class="card-num">7</div>
           <div>
             <div class="card-title">플랜별 리텐션 & 매출 변동 분석</div>
-            <div class="card-sub">Revenue Churn · NRR · 평균 LTV · MoM 추이 비교 · 계정 기준</div>
+            <div class="card-sub">Revenue Churn · NRR · 평균 LTV · MoM · 권장 액션 배지 · 위험 행 하이라이트 · 계정 기준</div>
           </div>
         </div>
         <div style="overflow:auto;flex:1">
@@ -646,30 +654,62 @@ aiItems.forEach(item=>{
 
 // ── 세그먼트 테이블 ──
 const segments=[
-  {plan:"스타터",customers:284,mrr:"₩28.4M",churn:"5.2%",nrr:"98%",ltv:"₩420K",mom:"-0.3%p",risk:"high"},
-  {plan:"프로",customers:156,mrr:"₩124.8M",churn:"2.8%",nrr:"118%",ltv:"₩1.82M",mom:"+0.4%p",risk:"low"},
-  {plan:"비즈니스",customers:62,mrr:"₩93.0M",churn:"1.4%",nrr:"124%",ltv:"₩3.24M",mom:"+0.2%p",risk:"low"},
-  {plan:"엔터프라이즈",customers:18,mrr:"₩36.0M",churn:"0.6%",nrr:"131%",ltv:"₩8.10M",mom:"+0.1%p",risk:"low"},
-  {plan:"전체 합계",customers:520,mrr:"₩282.2M",churn:"3.2%",nrr:"112%",ltv:"₩1.24M",mom:"+0.1%p",risk:null},
+  {plan:"스타터",customers:284,mrr:"₩28.4M",churnVal:5.2,nrrVal:98,ltv:"₩420K",mom:"-0.3%p",action:"CSM 배정",actionBg:"#FEF2F2",actionTxt:"#EF4444"},
+  {plan:"프로",customers:156,mrr:"₩124.8M",churnVal:2.8,nrrVal:118,ltv:"₩1.82M",mom:"+0.4%p",action:"업셀 캠페인",actionBg:"#ECFDF5",actionTxt:"#10B981"},
+  {plan:"비즈니스",customers:62,mrr:"₩93.0M",churnVal:1.4,nrrVal:124,ltv:"₩3.24M",mom:"+0.2%p",action:"유지 강화",actionBg:"#EEF2F8",actionTxt:"#2E3B55"},
+  {plan:"엔터프라이즈",customers:18,mrr:"₩36.0M",churnVal:0.6,nrrVal:131,ltv:"₩8.10M",mom:"+0.1%p",action:"고객 성공팀",actionBg:"#ECFDF5",actionTxt:"#10B981"},
+  {plan:"전체 합계",customers:520,mrr:"₩282.2M",churnVal:3.2,nrrVal:112,ltv:"₩1.24M",mom:"+0.1%p",action:null},
 ];
 const t=document.getElementById("segTable");
-t.innerHTML="<thead><tr><th>플랜</th><th>고객 수</th><th>MRR</th><th>Rev. Churn</th><th>NRR</th><th>평균 LTV</th><th>MoM 추이</th></tr></thead>"+
+const maxMRR=284;
+t.innerHTML="<thead><tr>"+
+  "<th style='text-align:left'>플랜</th>"+
+  "<th>고객 수</th>"+
+  "<th>영향 MRR</th>"+
+  "<th>Rev. Churn</th>"+
+  "<th>NRR</th>"+
+  "<th>평균 LTV</th>"+
+  "<th>MoM</th>"+
+  "<th style='text-align:left'>권장 액션</th>"+
+  "</tr></thead>"+
   "<tbody>"+segments.map((s,i)=>{
     const isLast=i===segments.length-1;
-    const churnVal=parseFloat(s.churn);
-    const nrrVal=parseFloat(s.nrr);
-    const churnColor=churnVal>4?"#EF4444":churnVal>2?"#334155":"#10B981";
-    const nrrColor=nrrVal>=110?"#10B981":"#334155";
+    const isDanger=s.churnVal>4;
+    const isWarn=s.churnVal>2&&s.churnVal<=4;
+    const churnColor=isDanger?"#EF4444":isWarn?"#2E3B55":"#10B981";
+    const nrrColor=s.nrrVal>=110?"#10B981":"#334155";
     const momColor=s.mom.startsWith("+")?"#10B981":"#EF4444";
-    const barW=Math.round((s.customers/520)*100);
-    return`<tr style="${isLast?"border-top:1.5px solid var(--border);background:#F8FAFF":""}">
-      <td>${s.plan}</td>
-      <td><span class="seg-bar" style="width:${barW}px"></span>${s.customers.toLocaleString()}개</td>
-      <td>${s.mrr}</td>
-      <td style="color:${churnColor};font-weight:600">${s.churn}</td>
-      <td style="color:${nrrColor};font-weight:${nrrVal>=110?700:400}">${s.nrr}</td>
+    const barW=Math.round((s.customers/520)*52);
+    const churnBarW=Math.round((s.churnVal/6)*48);
+    const mrrNum=parseFloat(s.mrr.replace("₩","").replace("M",""));
+    const mrrBarW=Math.round((mrrNum/maxMRR)*52);
+    const rowClass=isLast?"total-row":isDanger?"row-danger":isWarn?"row-warn":"";
+    const icon=isDanger?`<span class="risk-icon" style="background:#FEF2F2;color:#EF4444">!</span>`:
+                isWarn?`<span class="risk-icon" style="background:#EEF2F8;color:#2A7DB5">~</span>`:``;
+    return`<tr class="${rowClass}">
+      <td>${icon}${s.plan}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
+          <div style="width:${barW}px;height:5px;background:var(--c1);border-radius:3px;opacity:.7"></div>
+          ${s.customers.toLocaleString()}개
+        </div>
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px;justify-content:flex-end">
+          <div style="width:${mrrBarW}px;height:5px;background:var(--c2);border-radius:3px;opacity:.6"></div>
+          <b>${s.mrr}</b>
+        </div>
+      </td>
+      <td>
+        <div class="churn-bar-wrap">
+          <div class="churn-bar-track"><div class="churn-bar-fill" style="width:${churnBarW}px;background:${churnColor};opacity:.8"></div></div>
+          <span style="color:${churnColor};font-weight:700;min-width:30px">${s.churnVal}%</span>
+        </div>
+      </td>
+      <td style="color:${nrrColor};font-weight:${s.nrrVal>=110?700:400}">${s.nrrVal}%</td>
       <td>${s.ltv}</td>
       <td style="color:${momColor};font-weight:600">${s.mom}</td>
+      <td style="text-align:left">${s.action?`<span class="action-badge" style="background:${s.actionBg};color:${s.actionTxt}">${s.action}</span>`:""}</td>
     </tr>`;
   }).join("")+"</tbody>";
 </script>
